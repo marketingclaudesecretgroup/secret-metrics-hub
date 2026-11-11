@@ -60,8 +60,8 @@ function getApiBaseUrl() {
   var scriptProperties = PropertiesService.getScriptProperties();
   var url = scriptProperties.getProperty('API_BASE_URL');
   if (!url) {
-    // URL padrão de desenvolvimento/produção
-    return 'http://localhost:4000/api/looker';
+    // URL padrão oficial de produção no Render
+    return 'https://secret-metrics-hub.onrender.com/api/looker';
   }
   return url;
 }
