@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secret Metrics | Hub de Dados & Conector Looker Studio</title>
+  
+  <!-- Fontes Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+            },
+            obsidian: {
+              950: '#06080D',
+              900: '#0B0F19',
+              850: '#101626',
+              800: '#141C30',
+              700: '#1F293D',
+              600: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #06080D;
+      color: #F8FAFC;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+        linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+    .glass-panel {
+      background: rgba(16, 22, 38, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-panel-hover:hover {
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.15);
+    }
+    .glass-input {
+      background: rgba(11, 15, 25, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glass-input:focus {
+      border-color: #10b981;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #FFFFFF;
+      border-bottom: 2px solid #10b981;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F293D;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10b981;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-brand-500 selection:text-black">
+
+  <!-- Header / Navigation Bar -->
+  <header class="sticky top-0 z-40 border-b border-white/10 glass-panel bg-obsidian-950/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Status -->
+      <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-emerald-500 to-teal-400 flex items-center justify-center font-extrabold text-black text-lg shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+            S
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold tracking-tight text-white text-base">Secret<span class="text-brand-400">Metrics</span></span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold uppercase">Engine v1.0</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Live Status Pill -->
+        <div class="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-xs text-gray-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-mono text-[11px] text-gray-400">7 Conectores Online</span>
+        </div>
+      </div>
+
+      <!-- Tabs Navigation (SaaS Layout) -->
+      <nav id="navTabs" class="hidden lg:flex items-center gap-1 text-sm font-medium text-gray-400">
+        <button onclick="switchTab('overview')" class="tab-btn active px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="overview">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Visão Geral
+        </button>
+        <button onclick="switchTab('connectors')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="connectors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Conectores & Status
+        </button>
+        <button onclick="switchTab('looker')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="looker">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Central Looker Studio
+        </button>
+        <button onclick="switchTab('templates')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="templates">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+          Templates de Relatório
+        </button>
+      </nav>
+
+      <!-- Right User Controls & Auth Action -->
+      <div class="flex items-center gap-3">
+        <!-- Auth Profile Badge (Logged In) -->
+        <div id="userProfile" class="hidden items-center gap-3 bg-white/5 py-1 px-3 rounded-full border border-white/10">
+          <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" class="w-6 h-6 rounded-full border border-brand-500/50 object-cover" />
+          <div class="text-left hidden sm:block">
+            <div id="userName" class="text-xs font-semibold text-white leading-tight">Admin Secret Outlet</div>
+            <div id="userEmail" class="text-[10px] font-mono text-emerald-400">admin@secretoutlet.com.br</div>
+          </div>
+          <button onclick="logout()" title="Encerrar Sessão" class="text-gray-400 hover:text-rose-400 text-xs ml-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+
+        <!-- Login Trigger Button (Logged Out) -->
+        <button id="loginTriggerBtn" onclick="openLoginModal()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs sm:text-sm border border-white/10 flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+          <span>Entrar no Hub</span>
+        </button>
+
+        <!-- Direct Looker Studio Action -->
+        <a id="btnLookerDirect" href="https://lookerstudio.google.com" target="_blank" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-obsidian-950 font-bold text-xs sm:text-sm shadow-lg shadow-brand-500/20 hover:scale-[1.02] transition-all flex items-center gap-1.5">
+          <span>Looker Studio</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Tab Bar -->
+  <div class="lg:hidden flex border-b border-white/5 bg-obsidian-900 px-2 overflow-x-auto text-xs py-2 gap-1">
+    <button onclick="switchTab('overview')" class="tab-btn active px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="overview">Visão Geral</button>
+    <button onclick="switchTab('connectors')" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="connectors">Conectores</button>
+    <button onclick="switchTab('looker')" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="looker">Central Looker</button>
+    <button onclick="switchTab('templates')" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="templates">Templates</button>
+  </div>
+
+  <!-- Notification Banner (Auth, Error, Feedback) -->
+  <div id="notificationBanner" class="hidden max-w-7xl mx-auto px-6 pt-4 w-full"></div>
+
+  <!-- Main Content Areas -->
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: VISÃO GERAL (OVERVIEW DASHBOARD)    -->
+    <!-- ========================================== -->
+    <div id="tab-overview" class="tab-content space-y-8">
+      
+      <!-- Hero Metric Highlights Banner -->
+      <div class="relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-8">
+        <div class="absolute -right-20 -top-20 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-xs font-medium text-brand-400 mb-3">
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span>
+              Secret Outlet Omnichannel Analytics Hub
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">
+              Performance Unificada de Vendas & Mídia
+            </h1>
+            <p class="text-gray-400 text-sm max-w-2xl">
+              Consolidação em tempo real das lojas <strong>Shopify & Bagy</strong> cruzadas diretamente contra investimentos do <strong>Google Ads, Meta Ads e Criteo</strong>.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="refreshOverviewData()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-medium border border-white/10 flex items-center gap-2 transition-all">
+              <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Sincronizar Agora</span>
+            </button>
+            <button onclick="switchTab('looker')" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all shadow-md shadow-emerald-500/20">
+              Conectar Looker Studio
+            </button>
+          </div>
+        </div>
+
+        <!-- 6 Main Executive KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 mt-8">
+          
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[11px] font-mono text-gray-400 uppercase tracking-wider block mb-1">MER Soberano</span>
+            <div class="text-2xl font-black text-brand-400 font-mono tracking-tight" id="kpiMer">5.82x</div>
+            <div class="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+              <span class="text-emerald-400">↑ 14.2%</span> vs mês ant.
+            </div>
+          </div>
+
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[11px] font-mono text-gray-400 uppercase tracking-wider block mb-1">ROAS Real Global</span>
+            <div class="text-2xl font-black text-white font-mono tracking-tight" id="kpiRoas">5.82x</div>
+            <div class="text-[11px] text-gray-400 mt-1">Sem duplicações</div>
+          </div>
+
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[11px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Receita Aprovada</span>
+            <div class="text-xl sm:text-2xl font-black text-white font-mono tracking-tight" id="kpiRevenue">R$ 412.580</div>
+            <div class="text-[11px] text-emerald-400 mt-1">PIX + Cartão Pago</div>
+          </div>
+
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[11px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Gasto em Mídia</span>
+            <div class="text-xl sm:text-2xl font-black text-white font-mono tracking-tight" id="kpiSpend">R$ 70.890</div>
+            <div class="text-[11px] text-gray-400 mt-1">Google + Meta + Criteo</div>
+          </div>
+
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[11px] font-mono text-gray-400 uppercase tracking-wider block mb-1">CPA Blended</span>
+            <div class="text-2xl font-black text-cyan-400 font-mono tracking-tight" id="kpiCpa">R$ 38,52</div>
+            <div class="text-[11px] text-gray-400 mt-1">Por pedido faturado</div>
+          </div>
+
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[11px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Taxa Aprovação</span>
+            <div class="text-2xl font-black text-emerald-400 font-mono tracking-tight" id="kpiApproval">84.6%</div>
+            <div class="text-[11px] text-gray-400 mt-1">1.840 pedidos pagos</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Trend Chart & Channel Breakdown -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- 7-Day Performance Trend Chart (Visual CSS Bars) -->
+        <div class="lg:col-span-2 glass-panel rounded-3xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-lg font-bold text-white">Evolução de Faturamento vs Investimento</h2>
+              <p class="text-xs text-gray-400">Histórico dos últimos 7 dias sincronizados</p>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="flex items-center gap-1 text-gray-300"><span class="w-3 h-3 rounded bg-emerald-500"></span> Receita</span>
+              <span class="flex items-center gap-1 text-gray-300"><span class="w-3 h-3 rounded bg-cyan-500"></span> Investimento</span>
+            </div>
+          </div>
+
+          <div class="h-64 flex items-end justify-between gap-2 sm:gap-4 pt-6 px-2" id="trendBarsContainer">
+            <!-- Gerado dinamicamente via JS -->
+          </div>
+        </div>
+
+        <!-- Channel Breakdown (Performance Share) -->
+        <div class="glass-panel rounded-3xl p-6 flex flex-col justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-white mb-1">Divisão por Canais de Mídia</h2>
+            <p class="text-xs text-gray-400 mb-6">Investimento e ROAS atribuído por plataforma</p>
+
+            <div class="space-y-4" id="channelBreakdownList">
+              <!-- Gerado dinamicamente -->
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-gray-400">
+            <span>Algoritmo de Atribuição</span>
+            <span class="font-mono text-emerald-400">Last Non-Direct Click</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live Health Grid (The 7 Connectors) -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white">Status dos Conectores em Produção</h2>
+            <p class="text-xs text-gray-400">Monitoramento contínuo de latência e saúde de cada API</p>
+          </div>
+          <button onclick="switchTab('connectors')" class="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1">
+            <span>Gerenciar Credenciais</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="overviewConnectorsGrid">
+          <!-- Gerado via JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: CONECTORES & CREDENCIAIS (LIVE TESTING) -->
+    <!-- ============================================== -->
+    <div id="tab-connectors" class="tab-content hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-3xl">
+        <div>
+          <h2 class="text-2xl font-bold text-white mb-1">Painel de Conectores & Credenciais</h2>
+          <p class="text-sm text-gray-400">Teste em tempo real a comunicação com as APIs e valide tokens de acesso.</p>
+        </div>
+        <button onclick="testAllConnectors()" class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-black font-bold text-sm shadow-lg shadow-brand-500/20 transition-all flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Testar Todos os Conectores</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="connectorsDetailList">
+        <!-- Cards gerados dinamicamente via JS -->
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: CENTRAL LOOKER STUDIO               -->
+    <!-- ========================================== -->
+    <div id="tab-looker" class="tab-content hidden space-y-8">
+      
+      <!-- 1-Click Installation Card -->
+      <div class="glass-panel p-6 sm:p-8 rounded-3xl border-brand-500/20 relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold mb-3">
+              ★ Instalação Oficial em 1 Clique
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">Conectar ao Google Looker Studio</h2>
+            <p class="text-sm text-gray-400 max-w-2xl leading-relaxed">
+              Use o botão abaixo para abrir diretamente o instalador do Community Connector no Google Looker Studio com as credenciais da Secret Outlet pré-configuradas.
+            </p>
+          </div>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <a id="btnInstallLooker" href="https://lookerstudio.google.com/datasources/create" target="_blank" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-extrabold text-sm shadow-xl shadow-emerald-500/20 text-center transition-all flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <span>Instalar Conector no Looker</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-gray-400">
+          <div class="flex items-start gap-2.5">
+            <div class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[11px] shrink-0">1</div>
+            <span>Clique no botão acima para abrir a tela de adição do conector.</span>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <div class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[11px] shrink-0">2</div>
+            <span>Cole sua Chave de API Looker listada abaixo para autorizar.</span>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <div class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[11px] shrink-0">3</div>
+            <span>Escolha o Dataset (MER, Pedidos, Mídia, Orgânico) e comece a analisar.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Keys Manager -->
+      <div class="glass-panel p-6 rounded-3xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-xl font-bold text-white">Chaves de API do Conector</h3>
+            <p class="text-xs text-gray-400">Gere tokens exclusivos para analistas, painéis e integrações com o Looker Studio.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="newKeyNameInput" type="text" placeholder="Nome da chave (ex: Painel Diretoria)" class="glass-input px-3 py-2 rounded-xl text-xs text-white placeholder-gray-500 w-56" />
+            <button onclick="createNewApiKey()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/10 transition-all">
+              + Gerar Nova Chave
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-white/10 text-gray-400 font-mono">
+                <th class="py-3 px-4">NOME / FINALIDADE</th>
+                <th class="py-3 px-4">TOKEN DE API</th>
+                <th class="py-3 px-4">STATUS</th>
+                <th class="py-3 px-4">REQUISIÇÕES</th>
+                <th class="py-3 px-4 text-right">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="apiKeysTableBody" class="divide-y divide-white/5">
+              <!-- Gerado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Schema Viewer & Live Query Tester Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Interactive Schema Viewer -->
+        <div class="glass-panel p-6 rounded-3xl">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-lg font-bold text-white">Visualizador de Schema Looker</h3>
+              <p class="text-xs text-gray-400">Campos, tipos de dados e fórmulas de agregação</p>
+            </div>
+            <select id="schemaDatasetSelect" onchange="loadSchemaFields()" class="glass-input px-3 py-1.5 rounded-lg text-xs text-gray-200">
+              <option value="consolidated_mer">Consolidado: MER & ROAS</option>
+              <option value="ecommerce_orders">Pedidos Secret Outlet</option>
+              <option value="paid_media">Mídia Paga (Google/Meta/Criteo)</option>
+              <option value="organic_traffic">Orgânico (GA4 & GSC)</option>
+            </select>
+          </div>
+
+          <div class="max-h-96 overflow-y-auto space-y-2 pr-2" id="schemaFieldsList">
+            <!-- Gerado via JS -->
+          </div>
+        </div>
+
+        <!-- Interactive Query Tester -->
+        <div class="glass-panel p-6 rounded-3xl flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-lg font-bold text-white">Testador de Query em Tempo Real</h3>
+              <p class="text-xs text-gray-400">Simule a chamada exata que o Looker Studio realiza</p>
+            </div>
+            <button onclick="runQueryTest()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+              <span>Executar Query</span>
+            </button>
+          </div>
+
+          <!-- Controls -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="block text-[11px] font-mono text-gray-400 mb-1">Dataset</label>
+              <select id="queryTestDataset" class="w-full glass-input px-3 py-2 rounded-lg text-xs text-gray-200">
+                <option value="consolidated_mer">Consolidado: MER & ROAS</option>
+                <option value="ecommerce_orders">Pedidos E-commerce</option>
+                <option value="paid_media">Mídia Paga</option>
+                <option value="organic_traffic">Tráfego Orgânico</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-mono text-gray-400 mb-1">Filtro de Pedidos</label>
+              <select id="queryTestStatus" class="w-full glass-input px-3 py-2 rounded-lg text-xs text-gray-200">
+                <option value="paid_only">Apenas Faturados / Pagos</option>
+                <option value="all">Todos os Pedidos</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Query Results View Switcher -->
+          <div class="flex items-center justify-between border-b border-white/5 pb-2 mb-2 text-xs">
+            <div class="flex items-center gap-2">
+              <button onclick="setQueryView('table')" id="btnViewTable" class="px-2.5 py-1 rounded bg-white/10 text-white font-medium">Tabela</button>
+              <button onclick="setQueryView('json')" id="btnViewJson" class="px-2.5 py-1 rounded text-gray-400 hover:text-white">JSON Raw</button>
+            </div>
+            <span id="queryStatsPill" class="font-mono text-[11px] text-emerald-400">Pronto para consulta</span>
+          </div>
+
+          <!-- Query View Content -->
+          <div class="flex-1 bg-obsidian-950/90 rounded-xl p-3 border border-white/5 max-h-80 overflow-auto">
+            <div id="queryTableView">
+              <table class="w-full text-left text-[11px] font-mono" id="queryResultTable">
+                <thead class="border-b border-white/10 text-gray-400">
+                  <tr id="queryTableHead"></tr>
+                </thead>
+                <tbody id="queryTableBody" class="divide-y divide-white/5 text-gray-300">
+                  <tr><td class="py-4 text-center text-gray-500">Clique em "Executar Query" para consultar.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <pre id="queryJsonView" class="hidden text-xs font-mono text-emerald-300 leading-relaxed"></pre>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: TEMPLATES DE RELATÓRIO LOOKER       -->
+    <!-- ========================================== -->
+    <div id="tab-templates" class="tab-content hidden space-y-6">
+      <div class="glass-panel p-6 rounded-3xl">
+        <h2 class="text-2xl font-bold text-white mb-1">Templates Oficiais de Relatório</h2>
+        <p class="text-sm text-gray-400">Relatórios prontos desenhados especificamente para a operação da Secret Outlet no Google Looker Studio.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="templatesGrid">
+        <!-- Gerado via JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Google Workspace Login Modal (Linear Aesthetic) -->
+  <div id="loginModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-panel max-w-md w-full rounded-3xl p-8 border-white/10 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Close button (if user is just browsing) -->
+      <button onclick="closeLoginModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center font-extrabold text-black text-2xl mx-auto mb-4 shadow-xl shadow-brand-500/20">
+          S
+        </div>
+        <h3 class="text-2xl font-black text-white tracking-tight">Secret Metrics Hub</h3>
+        <p class="text-xs text-gray-400 mt-1">Plataforma restrita de inteligência e conectores de dados</p>
+      </div>
+
+      <!-- Security Badge -->
+      <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-gray-300 mb-6 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <div>
+          <span class="font-bold text-white block">Google Workspace SSO</span>
+          <span class="text-[11px] text-gray-400">Acesso exclusivo para contas <strong class="text-emerald-400">@secretoutlet.com.br</strong></span>
+        </div>
+      </div>
+
+      <!-- Official Google Sign-in Button -->
+      <button onclick="loginWithGoogle()" class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-gray-100 text-gray-900 font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-all transform hover:scale-[1.01] mb-3">
+        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+        <span>Entrar com Google Workspace</span>
+      </button>
+
+      <!-- Dev / Demo Bypass Button -->
+      <div class="mt-4 pt-4 border-t border-white/5">
+        <button onclick="loginWithDevDemo('admin')" class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 border border-emerald-500/20 font-mono text-xs flex items-center justify-center gap-2 transition-all">
+          <span>⚡ Acesso Rápido de Teste (Admin Corporativo)</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Application Logic -->
+  <script>
+    // State
+    let currentUser = null;
+    let cachedConnectors = [];
+    let currentQueryView = 'table';
+
+    // Toast feedback helper
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `px-4 py-3 rounded-xl border text-xs font-semibold shadow-2xl pointer-events-auto flex items-center gap-2 transition-all transform translate-y-2 opacity-0 ${
+        type === 'success' 
+          ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-300' 
+          : 'bg-rose-950/90 border-rose-500/50 text-rose-300'
+      }`;
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-400' : 'bg-rose-400'}"></span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Tabs navigation
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      const activeEl = document.getElementById(`tab-${tabId}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+
+      if (tabId === 'looker') {
+        loadApiKeys();
+        loadSchemaFields();
+      } else if (tabId === 'connectors') {
+        loadConnectorsDetail();
+      } else if (tabId === 'templates') {
+        loadTemplates();
+      }
+    }
+
+    // Auth verification
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        
+        if (data.authenticated && data.user) {
+          currentUser = data.user;
+          document.getElementById('userProfile').classList.remove('hidden');
+          document.getElementById('userProfile').classList.add('flex');
+          document.getElementById('loginTriggerBtn').classList.add('hidden');
+          document.getElementById('userName').textContent = currentUser.name;
+          document.getElementById('userEmail').textContent = currentUser.email;
+          if (currentUser.picture) {
+            document.getElementById('userAvatar').src = currentUser.picture;
+          }
+          closeLoginModal();
+          refreshOverviewData();
+        } else {
+          currentUser = null;
+          document.getElementById('userProfile').classList.add('hidden');
+          document.getElementById('loginTriggerBtn').classList.remove('hidden');
+          // Permite acesso como visitante ou abre modal se parâmetro presente
+          refreshOverviewData();
+        }
+      } catch (err) {
+        console.error('Erro na checagem de auth:', err);
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    async function loginWithGoogle() {
+      try {
+        const res = await fetch('/api/auth/google/url');
+        const data = await res.json();
+        if (data.authUrl) {
+          window.location.href = data.authUrl;
+        } else {
+          showToast(data.error || 'Configure GOOGLE_CLIENT_ID para OAuth ao vivo.', 'error');
+        }
+      } catch (err) {
+        showToast('Erro ao iniciar login Google: ' + err.message, 'error');
+      }
+    }
+
+    async function loginWithDevDemo(role = 'admin') {
+      try {
+        const res = await fetch('/api/auth/dev-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Bem-vindo, ${data.user.name} (@${data.user.domain})!`);
+          checkAuth();
+        }
+      } catch (err) {
+        showToast('Erro no login dev: ' + err.message, 'error');
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      showToast('Sessão encerrada com sucesso.');
+      setTimeout(() => window.location.reload(), 500);
+    }
+
+    // Overview KPIs and Charts
+    async function refreshOverviewData() {
+      try {
+        const res = await fetch('/api/portal/overview');
+        if (res.status === 401) {
+          // Não autenticado
+          return;
+        }
+        const data = await res.json();
+        if (!data.kpis) return;
+
+        document.getElementById('kpiMer').textContent = `${data.kpis.mer}x`;
+        document.getElementById('kpiRoas').textContent = `${data.kpis.realRoas}x`;
+        document.getElementById('kpiRevenue').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(data.kpis.approvedRevenue);
+        document.getElementById('kpiSpend').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(data.kpis.totalAdSpend);
+        document.getElementById('kpiCpa').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(data.kpis.blendedCpa);
+        document.getElementById('kpiApproval').textContent = `${data.kpis.approvalRate}%`;
+
+        // Render trend bars
+        const trendContainer = document.getElementById('trendBarsContainer');
+        trendContainer.innerHTML = '';
+        const maxRev = Math.max(...data.trend.map(t => t.revenue));
+
+        data.trend.forEach(t => {
+          const revHeight = Math.round((t.revenue / maxRev) * 100);
+          const spendHeight = Math.round((t.spend / maxRev) * 100);
+
+          const barCol = document.createElement('div');
+          barCol.className = 'flex-1 flex flex-col items-center gap-2 h-full justify-end group';
+          barCol.innerHTML = `
+            <div class="text-[10px] font-mono text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity">
+              ${t.mer}x MER
+            </div>
+            <div class="w-full flex items-end justify-center gap-1.5 h-44 bg-white/5 rounded-xl p-1.5 border border-white/5">
+              <div class="w-1/2 bg-emerald-500 rounded-lg transition-all group-hover:brightness-125" style="height: ${revHeight}%" title="Receita: R$ ${t.revenue}"></div>
+              <div class="w-1/2 bg-cyan-500 rounded-lg transition-all group-hover:brightness-125" style="height: ${spendHeight}%" title="Investimento: R$ ${t.spend}"></div>
+            </div>
+            <span class="text-[11px] font-mono text-gray-400">${t.day}</span>
+          `;
+          trendContainer.appendChild(barCol);
+        });
+
+        // Render channel breakdown
+        const channelContainer = document.getElementById('channelBreakdownList');
+        channelContainer.innerHTML = '';
+        data.channelBreakdown.forEach(c => {
+          const item = document.createElement('div');
+          item.className = 'p-3 rounded-2xl bg-white/5 border border-white/5';
+          item.innerHTML = `
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <span class="font-bold text-white">${c.name}</span>
+              <span class="font-mono text-emerald-400 font-bold">${c.roas}x ROAS</span>
+            </div>
+            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mb-2">
+              <div class="bg-brand-500 h-full rounded-full" style="width: ${c.share}%"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-gray-400 font-mono">
+              <span>Gasto: R$ ${c.spend.toLocaleString('pt-BR')}</span>
+              <span>Receita: R$ ${c.revenue.toLocaleString('pt-BR')}</span>
+            </div>
+          `;
+          channelContainer.appendChild(item);
+        });
+
+        loadOverviewConnectorsGrid();
+      } catch (err) {
+        console.error('Erro ao atualizar overview:', err);
+      }
+    }
+
+    async function loadOverviewConnectorsGrid() {
+      try {
+        const res = await fetch('/api/portal/connectors');
+        if (res.status === 401) return;
+        const data = await res.json();
+        cachedConnectors = data.connectors;
+
+        const container = document.getElementById('overviewConnectorsGrid');
+        container.innerHTML = '';
+
+        data.connectors.forEach(c => {
+          const card = document.createElement('div');
+          card.className = 'glass-panel glass-panel-hover p-4 rounded-2xl transition-all cursor-pointer';
+          card.onclick = () => switchTab('connectors');
+          card.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono uppercase text-gray-400">${c.category}</span>
+              <span class="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                ${c.lastLatencyMs}ms
+              </span>
+            </div>
+            <h4 class="font-bold text-white text-sm truncate mb-1">${c.name}</h4>
+            <div class="text-[11px] font-mono text-gray-400 truncate">${c.account}</div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Erro ao carregar grid de conectores:', err);
+      }
+    }
+
+    // Connectors Detail & Live Testing
+    async function loadConnectorsDetail() {
+      try {
+        const res = await fetch('/api/portal/connectors');
+        if (res.status === 401) return;
+        const data = await res.json();
+        cachedConnectors = data.connectors;
+
+        const container = document.getElementById('connectorsDetailList');
+        container.innerHTML = '';
+
+        data.connectors.forEach(c => {
+          const card = document.createElement('div');
+          card.className = 'glass-panel p-6 rounded-3xl border-white/5 flex flex-col justify-between';
+          card.id = `card-connector-${c.id}`;
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-mono uppercase text-emerald-400 font-semibold">${c.category}</span>
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  ONLINE • ${c.syncInterval}
+                </span>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-1">${c.name}</h3>
+              <p class="text-xs font-mono text-gray-400 mb-4 truncate">${c.account}</p>
+
+              <div class="space-y-2 mb-6 text-xs font-mono">
+                <div class="flex justify-between py-1.5 border-b border-white/5">
+                  <span class="text-gray-400">Endpoint API:</span>
+                  <span class="text-gray-200 truncate max-w-xs" title="${c.endpoint}">${c.endpoint}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-white/5">
+                  <span class="text-gray-400">Credencial Mascarada:</span>
+                  <span class="text-emerald-400">${c.tokenMasked}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-white/5">
+              <span id="ping-${c.id}" class="text-xs font-mono text-gray-400">Última latência: ${c.lastLatencyMs}ms</span>
+              <button onclick="testSingleConnector('${c.id}')" id="btn-test-${c.id}" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs border border-white/10 transition-all flex items-center gap-1.5">
+                <span>Testar Ao Vivo</span>
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Erro ao carregar detalhes dos conectores:', err);
+      }
+    }
+
+    async function testSingleConnector(id) {
+      const btn = document.getElementById(`btn-test-${id}`);
+      const pingLabel = document.getElementById(`ping-${id}`);
+      
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin mr-1">↻</span> Testando...`;
+      }
+
+      try {
+        const res = await fetch(`/api/portal/connectors/test/${id}`, { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.success) {
+          showToast(`✓ ${data.message} (${data.latencyMs}ms)`, 'success');
+          if (pingLabel) {
+            pingLabel.innerHTML = `<span class="text-emerald-400 font-bold">✓ Respondendo em ${data.latencyMs}ms</span>`;
+          }
+        } else {
+          showToast(`Erro no teste: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        showToast('Falha na requisição de teste: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>Testar Ao Vivo</span>`;
+        }
+      }
+    }
+
+    async function testAllConnectors() {
+      showToast('Iniciando diagnóstico simultâneo em todos os 7 conectores...');
+      for (const c of cachedConnectors) {
+        await testSingleConnector(c.id);
+      }
+    }
+
+    // Looker Studio Keys Management
+    async function loadApiKeys() {
+      try {
+        const res = await fetch('/api/portal/keys');
+        if (res.status === 401) return;
+        const data = await res.json();
+
+        const tbody = document.getElementById('apiKeysTableBody');
+        tbody.innerHTML = '';
+
+        data.keys.forEach(k => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-white/5 transition-colors';
+          tr.innerHTML = `
+            <td class="py-3 px-4 font-medium text-white">${k.name}</td>
+            <td class="py-3 px-4 font-mono text-emerald-400">
+              <code>${k.key}</code>
+              <button onclick="copyToClipboard('${k.fullKey}', 'Chave de API')" class="ml-2 text-gray-400 hover:text-white" title="Copiar Chave Completa">📋</button>
+            </td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono ${k.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
+                ${k.status.toUpperCase()}
+              </span>
+            </td>
+            <td class="py-3 px-4 font-mono text-gray-300">${k.usageCount} chamadas</td>
+            <td class="py-3 px-4 text-right">
+              ${k.id !== 'master-key' ? `
+                <button onclick="revokeApiKey('${k.id}')" class="text-xs text-rose-400 hover:text-rose-300">Revogar</button>
+              ` : '<span class="text-gray-500">Master</span>'}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Erro ao carregar chaves:', err);
+      }
+    }
+
+    async function createNewApiKey() {
+      const nameInput = document.getElementById('newKeyNameInput');
+      const name = nameInput.value.trim();
+      if (!name) {
+        showToast('Informe um nome para identificar a nova chave.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/portal/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Chave criada com sucesso!`);
+          nameInput.value = '';
+          loadApiKeys();
+        }
+      } catch (err) {
+        showToast('Erro ao criar chave: ' + err.message, 'error');
+      }
+    }
+
+    async function revokeApiKey(id) {
+      if (!confirm('Deseja realmente revogar esta chave de API? O conector Looker Studio vinculado deixará de responder.')) return;
+      try {
+        const res = await fetch(`/api/portal/keys/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Chave revogada com sucesso.');
+          loadApiKeys();
+        }
+      } catch (err) {
+        showToast('Erro ao revogar chave: ' + err.message, 'error');
+      }
+    }
+
+    // Schema Viewer
+    async function loadSchemaFields() {
+      const dataset = document.getElementById('schemaDatasetSelect').value;
+      const list = document.getElementById('schemaFieldsList');
+      list.innerHTML = '<div class="text-xs text-gray-400 py-4 text-center font-mono">Carregando schema...</div>';
+
+      try {
+        const res = await fetch(`/api/portal/schema/${dataset}`);
+        if (res.status === 401) return;
+        const data = await res.json();
+
+        list.innerHTML = '';
+        data.fields.forEach(f => {
+          const row = document.createElement('div');
+          row.className = 'p-3 rounded-xl bg-white/5 border border-white/5 text-xs';
+          row.innerHTML = `
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-white">${f.name} <code class="text-gray-400 font-mono text-[10px]">(${f.id})</code></span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono ${f.role === 'Metric' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-emerald-500/10 text-emerald-400'}">
+                ${f.type} • ${f.role}
+              </span>
+            </div>
+            <p class="text-gray-400 text-[11px] mb-1.5">${f.description}</p>
+            <div class="font-mono text-[10px] text-gray-500 bg-black/40 p-1.5 rounded">
+              Fórmula: <span class="text-gray-300">${f.formula}</span>
+            </div>
+          `;
+          list.appendChild(row);
+        });
+      } catch (err) {
+        list.innerHTML = `<div class="text-xs text-rose-400">Erro: ${err.message}</div>`;
+      }
+    }
+
+    // Query Tester
+    async function runQueryTest() {
+      const dataset = document.getElementById('queryTestDataset').value;
+      const orderStatusFilter = document.getElementById('queryTestStatus').value;
+      const statsPill = document.getElementById('queryStatsPill');
+      
+      statsPill.textContent = 'Executando consulta...';
+
+      try {
+        const start = performance.now();
+        const res = await fetch('/api/portal/query-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dataset,
+            orderStatusFilter,
+            dateRange: { startDate: '20261101', endDate: '20261111' }
+          })
+        });
+        const duration = Math.round(performance.now() - start);
+        const data = await res.json();
+
+        statsPill.textContent = `${data.count} registros em ${duration}ms`;
+
+        // Render Table
+        const thead = document.getElementById('queryTableHead');
+        const tbody = document.getElementById('queryTableBody');
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+
+        if (data.columns && data.columns.length > 0) {
+          data.columns.slice(0, 7).forEach(col => {
+            const th = document.createElement('th');
+            th.className = 'py-2 px-3';
+            th.textContent = col;
+            thead.appendChild(th);
+          });
+
+          data.rows.forEach(r => {
+            const tr = document.createElement('tr');
+            data.columns.slice(0, 7).forEach(col => {
+              const td = document.createElement('td');
+              td.className = 'py-2 px-3 truncate max-w-xs';
+              td.textContent = r[col];
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+        }
+
+        // Render JSON
+        document.getElementById('queryJsonView').textContent = JSON.stringify(data, null, 2);
+
+      } catch (err) {
+        statsPill.textContent = 'Erro ao executar query';
+        showToast('Erro: ' + err.message, 'error');
+      }
+    }
+
+    function setQueryView(view) {
+      currentQueryView = view;
+      const tableView = document.getElementById('queryTableView');
+      const jsonView = document.getElementById('queryJsonView');
+      const btnTable = document.getElementById('btnViewTable');
+      const btnJson = document.getElementById('btnViewJson');
+
+      if (view === 'table') {
+        tableView.classList.remove('hidden');
+        jsonView.classList.add('hidden');
+        btnTable.className = 'px-2.5 py-1 rounded bg-white/10 text-white font-medium';
+        btnJson.className = 'px-2.5 py-1 rounded text-gray-400 hover:text-white';
+      } else {
+        tableView.classList.add('hidden');
+        jsonView.classList.remove('hidden');
+        btnTable.className = 'px-2.5 py-1 rounded text-gray-400 hover:text-white';
+        btnJson.className = 'px-2.5 py-1 rounded bg-white/10 text-white font-medium';
+      }
+    }
+
+    // Templates
+    async function loadTemplates() {
+      try {
+        const res = await fetch('/api/portal/templates');
+        if (res.status === 401) return;
+        const data = await res.json();
+
+        const grid = document.getElementById('templatesGrid');
+        grid.innerHTML = '';
+
+        data.templates.forEach(t => {
+          const card = document.createElement('div');
+          card.className = 'glass-panel p-6 rounded-3xl border-white/5 flex flex-col justify-between';
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-${t.color}-500/10 text-${t.color}-400 border border-${t.color}-500/20">
+                  ${t.badge}
+                </span>
+                <span class="text-xs font-mono text-gray-400">Dataset: ${t.dataset}</span>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-2">${t.title}</h3>
+              <p class="text-xs text-gray-400 mb-6 leading-relaxed">${t.description}</p>
+
+              <div class="space-y-1.5 mb-6 bg-black/40 p-3.5 rounded-2xl border border-white/5">
+                <span class="text-[11px] font-mono text-gray-400 block mb-1 uppercase tracking-wider">Gráficos Inclusos:</span>
+                ${t.charts.map(c => `
+                  <div class="text-xs text-gray-300 flex items-center gap-2">
+                    <span class="text-emerald-400">✓</span> ${c}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+              <a href="${t.previewUrl}" target="_blank" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs text-center transition-all shadow-md shadow-emerald-500/10">
+                Abrir Template no Looker Studio ↗
+              </a>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Erro ao carregar templates:', err);
+      }
+    }
+
+    function copyToClipboard(text, label = 'Texto') {
+      navigator.clipboard.writeText(text);
+      showToast(`${label} copiado para a área de transferência!`);
+    }
+
+    // Init
+    checkAuth();
+  </script>
+</body>
+</html>

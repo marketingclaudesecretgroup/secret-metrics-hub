@@ -1,0 +1,83 @@
+# Render Infrastructure as Code Blueprint
+# https://render.com/docs/blueprint-spec
+version: "1"
+
+services:
+  - type: web
+    name: secret-metrics-hub
+    env: node
+    plan: starter
+    region: ohio # ou frankfurt / oregon
+    rootDir: backend-api
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/looker/health
+    autoDeploy: true
+
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+
+      # Chave Mestra para o Conector Google Looker Studio
+      - key: MASTER_API_KEY
+        generateValue: true
+
+      # Chave Criptográfica de Sessão (HMAC-SHA256)
+      - key: SESSION_SECRET
+        generateValue: true
+
+      # Segurança de Login Corporativo Google Workspace SSO
+      - key: ALLOWED_GOOGLE_DOMAINS
+        value: secretoutlet.com.br
+      - key: ALLOWED_GOOGLE_EMAILS
+        value: admin@secretoutlet.com.br,marketing@secretoutlet.com.br,diretoria@secretoutlet.com.br
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        value: /api/auth/google/callback
+      - key: DEV_LOGIN_ENABLED
+        value: "false"
+
+      # Integrações de E-commerce
+      - key: SHOPIFY_SHOP_DOMAIN
+        value: secretoutlet.myshopify.com
+      - key: SHOPIFY_ACCESS_TOKEN
+        sync: false
+      - key: BAGY_API_URL
+        value: https://api.bagy.com.br/v1
+      - key: BAGY_API_TOKEN
+        sync: false
+      - key: BAGY_STORE_ID
+        sync: false
+
+      # Mídia Paga
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: META_AD_ACCOUNT_ID
+        sync: false
+      - key: GOOGLE_ADS_DEVELOPER_TOKEN
+        sync: false
+      - key: GOOGLE_ADS_CLIENT_ID
+        sync: false
+      - key: GOOGLE_ADS_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_ADS_REFRESH_TOKEN
+        sync: false
+      - key: GOOGLE_ADS_CUSTOMER_ID
+        sync: false
+      - key: CRITEO_CLIENT_ID
+        sync: false
+      - key: CRITEO_CLIENT_SECRET
+        sync: false
+      - key: CRITEO_ADVERTISER_ID
+        sync: false
+
+      # Analytics & SEO
+      - key: GA4_PROPERTY_ID
+        sync: false
+      - key: GSC_SITE_URL
+        value: https://www.secretoutlet.com.br

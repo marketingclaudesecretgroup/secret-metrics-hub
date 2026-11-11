@@ -1,0 +1,27 @@
+{
+  "timeZone": "America/Sao_Paulo",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "dataStudio": {
+    "name": "Secret Metrics - Hub Unificado (Secret Outlet & Ads)",
+    "logoUrl": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+    "company": "Secret Outlet Intelligence",
+    "companyUrl": "https://secretoutlet.com.br",
+    "addonUrl": "https://secretoutlet.com.br",
+    "supportUrl": "https://secretoutlet.com.br",
+    "description": "Conector exclusivo para o ecossistema Secret Outlet: Consolida Bagy, Shopify, Google Ads, Meta Ads, Criteo Ads, GA4 e Google Search Console com cálculo automático de MER, ROAS Real e CAC.",
+    "sources": [
+      "Bagy",
+      "Shopify",
+      "Google Ads",
+      "Meta Ads",
+      "Criteo Ads",
+      "Google Analytics 4",
+      "Google Search Console"
+    ],
+    "auth": {
+      "type": "KEY"
+    }
+  }
+}
