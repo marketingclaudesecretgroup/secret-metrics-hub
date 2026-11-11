@@ -71,10 +71,36 @@
       outline: none;
       box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     }
-    .tab-btn.active {
-      background: rgba(255, 255, 255, 0.08);
+    .tab-btn {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 0.75rem;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
       color: #FFFFFF;
-      border-bottom: 2px solid #10b981;
+    }
+    .tab-btn.active {
+      background: rgba(16, 185, 129, 0.12);
+      color: #FFFFFF;
+      border-color: rgba(16, 185, 129, 0.35);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+    }
+    .tab-btn.active .tab-icon {
+      color: #34d399;
+    }
+    .tab-btn.active .tab-badge {
+      background: rgba(16, 185, 129, 0.25);
+      color: #6ee7b7;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
     /* Custom scrollbar */
     ::-webkit-scrollbar {
@@ -120,35 +146,72 @@
         </div>
       </div>
 
-      <!-- Tabs Navigation (SaaS Layout) -->
-      <nav id="navTabs" class="hidden lg:flex items-center gap-1 text-sm font-medium text-gray-400">
-        <button onclick="switchTab('overview')" class="tab-btn active px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="overview">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-          Visão Geral
-        </button>
-        <button onclick="switchTab('connectors')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="connectors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          Conectores & Status
-        </button>
-        <button onclick="switchTab('looker')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="looker">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          Central Looker Studio
-        </button>
-        <button onclick="switchTab('templates')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="templates">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
-          Templates de Relatório
-        </button>
-        <button onclick="switchTab('audit')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="audit">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          Auditoria & Logs
-        </button>
-      </nav>
-
       <!-- Right User Controls & Auth Action -->
       <div class="flex items-center gap-3">
         <!-- Auth Profile Badge (Logged In) -->
         <div id="userProfile" class="flex items-center gap-3 bg-white/5 py-1.5 px-3.5 rounded-full border border-white/10">
           <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" class="w-7 h-7 rounded-full border border-brand-500/50 object-cover" />
+          <div class="text-left hidden sm:block">
+            <div id="userName" class="text-xs font-semibold text-white leading-tight">Admin Secret Outlet</div>
+            <div id="userEmail" class="text-[10px] font-mono text-emerald-400">admin@secretoutlet.com.br</div>
+          </div>
+          <button onclick="logout()" title="Encerrar Sessão com Segurança" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs font-semibold border border-rose-500/20 flex items-center gap-1.5 transition-all ml-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span>Sair</span>
+          </button>
+        </div>
+
+        <!-- Direct Looker Studio Action -->
+        <a id="btnLookerDirect" href="https://lookerstudio.google.com" target="_blank" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-obsidian-950 font-bold text-xs sm:text-sm shadow-lg shadow-brand-500/20 hover:scale-[1.02] transition-all flex items-center gap-1.5">
+          <span>Looker Studio</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- DEDICATED TABS BAR (Fora do Menu Principal / Sub-Header)        -->
+  <!-- ============================================================== -->
+  <section class="sticky top-16 z-30 border-b border-white/10 glass-panel bg-obsidian-950/90 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5">
+      <nav id="navTabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1" role="tablist">
+        <!-- 1. Visão Geral -->
+        <button onclick="switchTab('overview')" class="tab-btn active px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-2.5 text-gray-400 group" data-tab="overview">
+          <svg class="w-4 h-4 tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span>Visão Geral</span>
+        </button>
+
+        <!-- 2. Conectores & Status -->
+        <button onclick="switchTab('connectors')" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-2.5 text-gray-400 group" data-tab="connectors">
+          <svg class="w-4 h-4 tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Conectores & Status</span>
+          <span class="tab-badge text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400 group-hover:text-emerald-300">7</span>
+        </button>
+
+        <!-- 3. Central Looker Studio -->
+        <button onclick="switchTab('looker')" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-2.5 text-gray-400 group" data-tab="looker">
+          <svg class="w-4 h-4 tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span>Central Looker Studio</span>
+          <span class="tab-badge text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold">Hub</span>
+        </button>
+
+        <!-- 4. Templates de Relatório -->
+        <button onclick="switchTab('templates')" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-2.5 text-gray-400 group" data-tab="templates">
+          <svg class="w-4 h-4 tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+          <span>Templates de Relatório</span>
+          <span class="tab-badge text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400">4</span>
+        </button>
+
+        <!-- 5. Auditoria & Logs -->
+        <button onclick="switchTab('audit')" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-2.5 text-gray-400 group" data-tab="audit">
+          <svg class="w-4 h-4 tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Auditoria & Logs</span>
+          <span class="tab-badge text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold">Live</span>
+        </button>
+      </nav>
+    </div>
+  </section>
           <div class="text-left hidden sm:block">
             <div id="userName" class="text-xs font-semibold text-white leading-tight">Admin Secret Outlet</div>
             <div id="userEmail" class="text-[10px] font-mono text-emerald-400">admin@secretoutlet.com.br</div>
