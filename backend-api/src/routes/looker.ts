@@ -7,7 +7,7 @@ export const lookerRouter = Router();
 const aggregator = new DataAggregator();
 
 /**
- * Health Check & Verificação do Conector
+ * Health Check & Verificação do Conector Looker Studio
  */
 lookerRouter.get('/health', (req: Request, res: Response) => {
   res.json({
@@ -26,14 +26,32 @@ lookerRouter.post('/data', async (req: Request, res: Response) => {
   try {
     const payload: LookerRequestPayload = req.body;
 
-    // Validação da API Key do conector Looker Studio
-    if (!payload.apiKey || !apiKeyStore.isValidKey(payload.apiKey)) {
-      return res.status(401).json({ error: 'Chave de API do conector não autorizada ou revogada.' });
+    if (!payload || typeof payload !== 'object') {
+      return res.status(400).json({ error: 'Payload de requisição inválido.' });
     }
 
-    const { dataset, dateRange, orderStatusFilter, fields } = payload;
-    const startDate = dateRange?.startDate;
-    const endDate = dateRange?.endDate;
+    // 1. Validação estrita da API Key do conector Looker Studio
+    if (!payload.apiKey || typeof payload.apiKey !== 'string' || !apiKeyStore.isValidKey(payload.apiKey.trim())) {
+      return res.status(401).json({
+        error: 'Chave de API do conector não autorizada ou revogada.',
+        hint: 'Gere uma chave ativa no portal da Secret Metrics.'
+      });
+    }
+
+    // 2. Sanitização de Dataset (Whitelisting)
+    const allowedDatasets = ['consolidated_mer', 'ecommerce_orders', 'paid_media', 'organic_traffic'];
+    const dataset = allowedDatasets.includes(payload.dataset) ? payload.dataset : 'consolidated_mer';
+
+    // 3. Sanitização de datas (formato numérico YYYYMMDD ou YYYY-MM-DD)
+    const sanitizeDate = (val: any): string | undefined => {
+      if (typeof val !== 'string') return undefined;
+      const cleaned = val.replace(/[^0-9]/g, '');
+      return cleaned.length === 8 ? cleaned : undefined;
+    };
+
+    const startDate = sanitizeDate(payload.dateRange?.startDate);
+    const endDate = sanitizeDate(payload.dateRange?.endDate);
+    const paidOnly = payload.orderStatusFilter === 'paid_only';
 
     let rows: any[] = [];
 
@@ -43,7 +61,6 @@ lookerRouter.post('/data', async (req: Request, res: Response) => {
         break;
 
       case 'ecommerce_orders':
-        const paidOnly = orderStatusFilter === 'paid_only';
         rows = await aggregator.getAllOrders(startDate, endDate, paidOnly);
         break;
 
@@ -59,7 +76,7 @@ lookerRouter.post('/data', async (req: Request, res: Response) => {
         rows = await aggregator.getConsolidatedMER(startDate, endDate);
     }
 
-    // Retorna linhas para o conector formatar
+    // 4. Retorno seguro para o conector Looker Studio
     return res.json({
       success: true,
       count: rows.length,

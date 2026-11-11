@@ -36,7 +36,8 @@ export class GoogleAdsConnector {
         impressions: 32000,
         clicks: 1120,
         conversions: 24,
-        conversionValue: 5640.00
+        conversionValue: 5640.00,
+        reportedRoas: 9.72
       },
       {
         date: d,
@@ -47,7 +48,8 @@ export class GoogleAdsConnector {
         impressions: 4200,
         clicks: 390,
         conversions: 14,
-        conversionValue: 3100.00
+        conversionValue: 3100.00,
+        reportedRoas: 21.35
       }
     ];
   }

@@ -32,6 +32,7 @@ export interface AdPerformanceRow {
   clicks: number;
   conversions: number;
   conversionValue: number;
+  reportedRoas: number;
 }
 
 export interface ConsolidatedMERRow {

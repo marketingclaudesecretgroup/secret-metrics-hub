@@ -37,16 +37,21 @@ export class MetaAdsConnector {
         const purchases = item.actions?.find((a: any) => a.action_type === 'purchase')?.value || 0;
         const purchaseValue = item.action_values?.find((a: any) => a.action_type === 'purchase')?.value || 0;
 
+        const spendVal = parseFloat(item.spend || '0');
+        const convVal = parseFloat(purchaseValue);
+        const reportedRoas = spendVal > 0 ? parseFloat((convVal / spendVal).toFixed(2)) : 0;
+
         return {
           date: dateStr,
           adPlatform: 'Meta Ads',
           campaignName: item.campaign_name || 'Campanha Meta Secret Outlet',
           adGroupName: 'Geral',
-          spend: parseFloat(item.spend || '0'),
+          spend: spendVal,
           impressions: parseInt(item.impressions || '0', 10),
           clicks: parseInt(item.clicks || '0', 10),
           conversions: parseInt(purchases, 10),
-          conversionValue: parseFloat(purchaseValue)
+          conversionValue: convVal,
+          reportedRoas
         };
       });
     } catch (error: any) {
@@ -67,7 +72,8 @@ export class MetaAdsConnector {
         impressions: 18500,
         clicks: 740,
         conversions: 18,
-        conversionValue: 3950.00
+        conversionValue: 3950.00,
+        reportedRoas: 9.39
       },
       {
         date: d,
@@ -78,7 +84,8 @@ export class MetaAdsConnector {
         impressions: 24000,
         clicks: 610,
         conversions: 7,
-        conversionValue: 1420.00
+        conversionValue: 1420.00,
+        reportedRoas: 4.58
       }
     ];
   }

@@ -229,7 +229,7 @@ function getData(request) {
   var responseData = JSON.parse(response.getContentText());
   var rows = [];
 
-  // Converte a resposta tabular da API no formato do Looker Studio
+  // Converte a resposta tabular da API no formato estrito do Looker Studio
   if (responseData.rows && responseData.rows.length > 0) {
     rows = responseData.rows.map(function(row) {
       var values = [];
@@ -237,8 +237,10 @@ function getData(request) {
         var val = row[fieldId];
         if (val === undefined || val === null) {
           values.push('');
+        } else if (typeof val === 'number') {
+          values.push(isNaN(val) || !isFinite(val) ? 0 : val);
         } else {
-          values.push(val);
+          values.push(String(val));
         }
       });
       return { values: values };

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { config } from '../config.js';
-import { sessionManager, AuthUser } from '../auth/session.js';
+import { sessionManager, AuthUser, sanitizeReturnUrl } from '../auth/session.js';
 
 export const authRouter = Router();
 
@@ -24,7 +24,7 @@ authRouter.get('/me', (req: Request, res: Response) => {
 });
 
 /**
- * Gera a URL oficial de consentimento do Google Workspace OAuth2
+ * Gera a URL oficial de consentimento do Google Workspace OAuth2 com State Anti-CSRF
  */
 authRouter.get('/google/url', (req: Request, res: Response) => {
   const { googleClientId, googleRedirectUri } = config.auth;
@@ -35,6 +35,10 @@ authRouter.get('/google/url', (req: Request, res: Response) => {
       devLoginAvailable: config.auth.devLoginEnabled
     });
   }
+
+  // Sanitiza o returnTo para proteção contra Open Redirect
+  const returnTo = sanitizeReturnUrl(req.query.returnTo as string);
+  const state = sessionManager.createOAuthState(returnTo);
 
   // Define redirect URI completo
   const protocol = req.protocol;
@@ -48,6 +52,7 @@ authRouter.get('/google/url', (req: Request, res: Response) => {
     redirect_uri: redirectUri,
     response_type: 'code',
     scope: 'openid email profile',
+    state,
     hd: 'secretoutlet.com.br', // Filtra visualmente no Google para o domínio corporativo
     access_type: 'online',
     prompt: 'select_account'
@@ -57,20 +62,29 @@ authRouter.get('/google/url', (req: Request, res: Response) => {
 
   return res.json({
     authUrl,
+    state,
     allowedDomains: config.auth.allowedDomains
   });
 });
 
 /**
- * Callback do Google OAuth2
+ * Callback do Google OAuth2 com validação rigorosa de State Anti-CSRF e Domínio
  */
 authRouter.get('/google/callback', async (req: Request, res: Response) => {
   const code = req.query.code as string;
   const error = req.query.error as string;
+  const state = req.query.state as string;
 
   if (error || !code) {
     console.error('[Google OAuth] Erro ou cancelamento:', error);
-    return res.redirect(`/?auth_error=${encodeURIComponent(error || 'missing_code')}`);
+    return res.redirect(`/login?auth_error=${encodeURIComponent(error || 'missing_code')}`);
+  }
+
+  // 1. Verificação rigorosa do State Anti-CSRF
+  const { valid: isStateValid, returnTo } = sessionManager.verifyOAuthState(state);
+  if (!isStateValid) {
+    console.warn('[Google OAuth] Tentativa de CSRF ou state expirado detectada.');
+    return res.redirect('/login?auth_error=invalid_state');
   }
 
   try {
@@ -80,7 +94,7 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
       ? config.auth.googleRedirectUri
       : `${protocol}://${host}${config.auth.googleRedirectUri}`;
 
-    // 1. Troca code por tokens no Google
+    // 2. Troca code por tokens no Google
     const tokenResponse = await axios.post(
       'https://oauth2.googleapis.com/token',
       new URLSearchParams({
@@ -97,7 +111,7 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
 
     const { access_token } = tokenResponse.data;
 
-    // 2. Busca informações do perfil do usuário
+    // 3. Busca informações do perfil do usuário
     const userResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: `Bearer ${access_token}` }
     });
@@ -106,16 +120,16 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
     const email: string = (googleUser.email || '').toLowerCase();
     const domain = email.split('@')[1] || '';
 
-    // 3. Validação estrita do domínio corporativo ou lista de e-mails autorizados
+    // 4. Validação estrita do domínio corporativo ou lista de e-mails autorizados
     const isDomainAllowed = config.auth.allowedDomains.includes(domain);
     const isEmailAllowed = config.auth.allowedEmails.includes(email);
 
     if (!isDomainAllowed && !isEmailAllowed) {
       console.warn(`[Google OAuth] Acesso negado para: ${email}. Domínio não autorizado: @${domain}`);
-      return res.redirect(`/?auth_error=unauthorized_domain&email=${encodeURIComponent(email)}`);
+      return res.redirect(`/login?auth_error=unauthorized_domain&email=${encodeURIComponent(email)}`);
     }
 
-    // 4. Criação da sessão corporativa segura
+    // 5. Criação da sessão corporativa segura
     const user: AuthUser = {
       id: googleUser.sub || `usr_${Date.now()}`,
       email,
@@ -130,10 +144,11 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
     sessionManager.setCookie(res, user);
     console.log(`[Google OAuth] Login bem-sucedido: ${email} (${user.role})`);
 
-    return res.redirect('/?auth=success');
+    const safeTarget = returnTo && returnTo !== '/login' ? returnTo : '/';
+    return res.redirect(safeTarget);
   } catch (err: any) {
     console.error('[Google OAuth] Falha no fluxo OAuth:', err.response?.data || err.message);
-    return res.redirect(`/?auth_error=oauth_failed`);
+    return res.redirect(`/login?auth_error=oauth_failed`);
   }
 });
 
@@ -149,8 +164,9 @@ authRouter.post('/dev-login', (req: Request, res: Response) => {
   }
 
   const role = req.body.role === 'analyst' ? 'analyst' : 'admin';
-  const email = req.body.email || (role === 'admin' ? 'admin@secretoutlet.com.br' : 'growth@secretoutlet.com.br');
-  const name = req.body.name || (role === 'admin' ? 'Secret Outlet Admin' : 'Growth & Performance Team');
+  const email = (req.body.email || (role === 'admin' ? 'admin@secretoutlet.com.br' : 'growth@secretoutlet.com.br')).toLowerCase();
+  const name = req.body.name || (role === 'admin' ? 'Secret Outlet Admin' : 'Growth & Performance Analyst');
+  const returnTo = sanitizeReturnUrl(req.body.returnTo || req.query.returnTo as string);
 
   const user: AuthUser = {
     id: `dev_${Date.now()}`,
@@ -168,7 +184,8 @@ authRouter.post('/dev-login', (req: Request, res: Response) => {
   return res.json({
     success: true,
     message: 'Login corporativo ativo com sucesso.',
-    user
+    user,
+    redirect: returnTo && returnTo !== '/login' ? returnTo : '/'
   });
 });
 
@@ -179,6 +196,7 @@ authRouter.post('/logout', (req: Request, res: Response) => {
   sessionManager.clearCookie(res);
   return res.json({
     success: true,
+    redirect: '/login',
     message: 'Sessão encerrada com segurança.'
   });
 });

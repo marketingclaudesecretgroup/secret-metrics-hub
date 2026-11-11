@@ -343,13 +343,16 @@ portalRouter.get('/schema/:dataset', (req: Request, res: Response) => {
       { id: 'spend', name: 'Investimento (Gasto)', type: 'CURRENCY_BRL', role: 'Metric', formula: 'SUM(spend)', description: 'Valor investido no canal' },
       { id: 'impressions', name: 'Impressões', type: 'NUMBER', role: 'Metric', formula: 'SUM(impressions)', description: 'Alcance e visualizações' },
       { id: 'clicks', name: 'Cliques', type: 'NUMBER', role: 'Metric', formula: 'SUM(clicks)', description: 'Cliques qualificados' },
-      { id: 'conversions', name: 'Conversões', type: 'NUMBER', role: 'Metric', formula: 'SUM(conversions)', description: 'Vendas registradas pelo pixel da rede' }
+      { id: 'conversions', name: 'Conversões', type: 'NUMBER', role: 'Metric', formula: 'SUM(conversions)', description: 'Vendas registradas pelo pixel da rede' },
+      { id: 'conversionValue', name: 'Receita Reportada na Plataforma', type: 'CURRENCY_BRL', role: 'Metric', formula: 'SUM(conversionValue)', description: 'Faturamento creditado pelo algoritmo da rede' },
+      { id: 'reportedRoas', name: 'ROAS Reportado', type: 'NUMBER', role: 'Metric', formula: 'conversionValue / spend', description: 'Retorno sobre investimento de anúncios reportado pela respectiva plataforma' }
     ],
     organic_traffic: [
       { id: 'pagePath', name: 'Página / URL', type: 'TEXT', role: 'Dimension', formula: 'page_path', description: 'URL de destino no site Secret Outlet' },
       { id: 'searchQuery', name: 'Termo de Pesquisa (GSC)', type: 'TEXT', role: 'Dimension', formula: 'search_query', description: 'Palavra-chave buscada no Google' },
       { id: 'sessions', name: 'Sessões (GA4)', type: 'NUMBER', role: 'Metric', formula: 'SUM(sessions)', description: 'Visitas orgânicas' },
       { id: 'organicClicks', name: 'Cliques Orgânicos (GSC)', type: 'NUMBER', role: 'Metric', formula: 'SUM(clicks)', description: 'Cliques nos resultados orgânicos do Google' },
+      { id: 'organicImpressions', name: 'Impressões Orgânicas (GSC)', type: 'NUMBER', role: 'Metric', formula: 'SUM(impressions)', description: 'Visualizações nos resultados de busca do Google' },
       { id: 'averagePosition', name: 'Posição Média (GSC)', type: 'NUMBER', role: 'Metric', formula: 'AVG(position)', description: 'Classificação no ranking orgânico do Google' }
     ]
   };

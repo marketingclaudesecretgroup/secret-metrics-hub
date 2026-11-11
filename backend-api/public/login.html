@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Corporativo | Secret Metrics Hub</title>
+  
+  <!-- Fontes Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+            },
+            obsidian: {
+              950: '#06080D',
+              900: '#0B0F19',
+              850: '#101626',
+              800: '#141C30',
+              700: '#1F293D',
+              600: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #06080D;
+      color: #F8FAFC;
+      background-image: 
+        radial-gradient(at 20% 15%, rgba(16, 185, 129, 0.12) 0px, transparent 45%),
+        radial-gradient(at 80% 20%, rgba(6, 182, 212, 0.10) 0px, transparent 40%),
+        radial-gradient(at 50% 80%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+        linear-gradient(to bottom, rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+    }
+
+    .glass-card {
+      background: rgba(16, 22, 38, 0.75);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .glow-pulse {
+      animation: pulseGlow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.9;
+        transform: scale(1.03);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans selection:bg-brand-500 selection:text-black">
+
+  <!-- Top Simple Navigation / Status Bar -->
+  <header class="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-emerald-500 to-teal-400 flex items-center justify-center font-extrabold text-black text-lg shadow-lg shadow-brand-500/20">
+        S
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="font-bold tracking-tight text-white text-base">Secret<span class="text-brand-400">Metrics</span></span>
+        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold uppercase">Enterprise Gatekeeper</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-mono text-[11px] text-gray-400">Google Workspace SSO Ativo</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Central Login Experience -->
+  <main class="flex-1 flex items-center justify-center px-4 py-8 relative">
+    
+    <!-- Atmospheric Ambient Glows -->
+    <div class="absolute w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[140px] pointer-events-none glow-pulse"></div>
+
+    <div class="w-full max-w-md relative z-10">
+      
+      <!-- Card Container -->
+      <div class="glass-card rounded-3xl p-8 sm:p-10 transition-all">
+        
+        <!-- Logo & Brand Header -->
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-black font-black text-2xl shadow-xl shadow-brand-500/25 mb-4 transform hover:rotate-3 transition-transform">
+            SO
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Secret Outlet Metrics
+          </h1>
+          <p class="text-xs sm:text-sm text-gray-400 mt-2 leading-relaxed">
+            Hub Unificado de Inteligência Omnichannel, Auditoria de Pedidos & Conector Oficial Looker Studio.
+          </p>
+        </div>
+
+        <!-- Dynamic Error Banner (if redirected with ?auth_error=...) -->
+        <div id="errorBanner" class="hidden mb-6 p-4 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-xs text-rose-200">
+          <div class="flex items-start gap-3">
+            <span class="text-base text-rose-400">⚠️</span>
+            <div>
+              <div id="errorTitle" class="font-bold text-rose-100 mb-1">Acesso não autorizado</div>
+              <div id="errorDescription" class="text-rose-300 leading-relaxed"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Action: Google Workspace SSO -->
+        <div class="space-y-4">
+          <button 
+            id="btnGoogleLogin"
+            onclick="initiateGoogleLogin()"
+            class="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-gray-100 text-gray-900 font-bold text-sm shadow-xl shadow-white/5 hover:shadow-emerald-500/10 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-3 group relative overflow-hidden"
+          >
+            <!-- Google "G" Icon -->
+            <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            <span id="btnGoogleText">Entrar com Google Workspace</span>
+            <div id="btnGoogleSpinner" class="hidden animate-spin w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full ml-1"></div>
+          </button>
+
+          <div class="text-center">
+            <span class="text-[11px] font-mono text-gray-500">
+              Restrito a contas corporativas <strong class="text-emerald-400">@secretoutlet.com.br</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Dev & Demo Section (Accordion) -->
+        <div id="devLoginContainer" class="mt-8 pt-6 border-t border-white/10">
+          <button 
+            type="button" 
+            onclick="toggleDevLogin()" 
+            class="w-full flex items-center justify-between text-left text-xs font-mono text-gray-400 hover:text-emerald-400 transition-colors py-1"
+          >
+            <span class="flex items-center gap-2">
+              <span class="text-emerald-400">⚡</span>
+              <span>Acesso Rápido de Homologação (Dev)</span>
+            </span>
+            <span id="devToggleIcon" class="text-xs transition-transform duration-200">▾</span>
+          </button>
+
+          <div id="devLoginOptions" class="hidden mt-4 space-y-2.5">
+            <button 
+              onclick="loginAsDev('admin')"
+              class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-emerald-500/10 text-gray-200 hover:text-emerald-300 border border-white/10 hover:border-emerald-500/30 font-medium text-xs flex items-center justify-between transition-all"
+            >
+              <div class="flex items-center gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span class="text-left font-mono">Admin Corporativo</span>
+              </div>
+              <span class="text-[10px] font-mono text-gray-400">admin@secretoutlet.com.br</span>
+            </button>
+
+            <button 
+              onclick="loginAsDev('analyst')"
+              class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/10 text-gray-200 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 font-medium text-xs flex items-center justify-between transition-all"
+            >
+              <div class="flex items-center gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span class="text-left font-mono">Head de Growth & Mídia</span>
+              </div>
+              <span class="text-[10px] font-mono text-gray-400">growth@secretoutlet.com.br</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Security & Compliance Trust Badges -->
+        <div class="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 gap-3 text-[11px] font-mono text-gray-400">
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400">🛡️</span>
+            <span>OAuth 2.0 OIDC</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400">🔒</span>
+            <span>HMAC-SHA256 Token</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400">🍪</span>
+            <span>HTTP-Only SameSite</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400">⚡</span>
+            <span>TLS 1.3 End-to-End</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Under Card Support Note -->
+      <div class="text-center mt-6 text-xs text-gray-500">
+        Problemas com login? Contate <a href="mailto:suporte@secretoutlet.com.br" class="text-gray-400 hover:text-emerald-400 underline">suporte@secretoutlet.com.br</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div>
+      © 2026 Secret Outlet Moda Masculina Ltda. Todos os direitos reservados.
+    </div>
+    <div class="flex items-center gap-4 text-xs font-mono">
+      <span class="text-emerald-400">● Conectores 100% Operacionais</span>
+      <span>•</span>
+      <span>Looker Gateway v1.0</span>
+    </div>
+  </footer>
+
+  <script>
+    // Recupera returnTo da URL se existir
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('returnTo') || '/';
+    const authError = urlParams.get('auth_error');
+    const emailParam = urlParams.get('email');
+
+    // 1. Verificação proativa de sessão existente: Se já logado, redireciona para o destino
+    async function checkExistingSession() {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          // Já autenticado: encaminha imediatamente
+          const target = returnTo && returnTo !== '/login' ? returnTo : '/';
+          window.location.replace(target);
+        }
+      } catch (err) {
+        console.warn('Erro ao checar sessão ativa:', err);
+      }
+    }
+    checkExistingSession();
+
+    // 2. Tratamento visual de erros de autenticação
+    if (authError) {
+      const banner = document.getElementById('errorBanner');
+      const title = document.getElementById('errorTitle');
+      const desc = document.getElementById('errorDescription');
+
+      banner.classList.remove('hidden');
+
+      switch (authError) {
+        case 'unauthorized_domain':
+          title.textContent = 'Domínio Não Autorizado';
+          desc.textContent = emailParam 
+            ? `O e-mail "${emailParam}" não pertence ao domínio corporativo @secretoutlet.com.br nem à lista de administradores autorizados.`
+            : 'A conta utilizada não tem permissão para acessar este portal restrito.';
+          break;
+        case 'access_denied':
+          title.textContent = 'Acesso Cancelado';
+          desc.textContent = 'A autenticação foi cancelada na tela de consentimento da conta Google.';
+          break;
+        case 'invalid_state':
+          title.textContent = 'Falha de Segurança (CSRF State)';
+          desc.textContent = 'O token anti-CSRF expirou ou é inválido. Por favor, tente novamente.';
+          break;
+        case 'oauth_failed':
+          title.textContent = 'Falha na Comunicação com Google';
+          desc.textContent = 'Não foi possível validar o token de acesso com o Google Workspace. Tente novamente em instantes.';
+          break;
+        default:
+          title.textContent = 'Falha de Autenticação';
+          desc.textContent = `Código de erro retornado: ${authError}. Tente novamente.`;
+      }
+    }
+
+    // 3. Inicia fluxo oficial de Google Workspace SSO
+    async function initiateGoogleLogin() {
+      const btn = document.getElementById('btnGoogleLogin');
+      const text = document.getElementById('btnGoogleText');
+      const spinner = document.getElementById('btnGoogleSpinner');
+
+      btn.disabled = true;
+      text.textContent = 'Conectando ao Google...';
+      spinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/auth/google/url?returnTo=${encodeURIComponent(returnTo)}`);
+        const data = await res.json();
+
+        if (data.authUrl) {
+          window.location.href = data.authUrl;
+        } else {
+          btn.disabled = false;
+          text.textContent = 'Entrar com Google Workspace';
+          spinner.classList.add('hidden');
+          
+          alert(data.error || 'Configure o GOOGLE_CLIENT_ID nas variáveis de ambiente.');
+          toggleDevLogin(true); // abre opções de dev automaticamente se Google OAuth não estiver provisionado
+        }
+      } catch (err) {
+        btn.disabled = false;
+        text.textContent = 'Entrar com Google Workspace';
+        spinner.classList.add('hidden');
+        alert('Erro ao iniciar login: ' + err.message);
+      }
+    }
+
+    // 4. Login Rápido de Homologação / Teste
+    async function loginAsDev(role) {
+      try {
+        const res = await fetch('/api/auth/dev-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, returnTo })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const target = data.redirect || returnTo || '/';
+          window.location.replace(target);
+        } else {
+          alert('Erro no login dev: ' + (data.error || 'Falha ao autenticar'));
+        }
+      } catch (err) {
+        alert('Erro ao comunicar com o servidor: ' + err.message);
+      }
+    }
+
+    function toggleDevLogin(forceOpen = false) {
+      const options = document.getElementById('devLoginOptions');
+      const icon = document.getElementById('devToggleIcon');
+      const isHidden = options.classList.contains('hidden');
+
+      if (isHidden || forceOpen) {
+        options.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        options.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+  </script>
+</body>
+</html>

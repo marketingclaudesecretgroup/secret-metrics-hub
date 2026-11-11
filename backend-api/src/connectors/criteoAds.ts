@@ -24,7 +24,8 @@ export class CriteoAdsConnector {
         impressions: 48000,
         clicks: 880,
         conversions: 11,
-        conversionValue: 2450.00
+        conversionValue: 2450.00,
+        reportedRoas: 12.54
       }
     ];
   }

@@ -13,8 +13,28 @@ export interface AuthUser {
   expiresAt: number;
 }
 
+export interface OAuthStatePayload {
+  nonce: string;
+  returnTo: string;
+  timestamp: number;
+}
+
 const COOKIE_NAME = 'sm_session';
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000; // 10 minutos para completar login
+
+/**
+ * Sanitiza URL de redirecionamento interno para prevenir ataques de Open Redirect
+ */
+export function sanitizeReturnUrl(url?: string | null): string {
+  if (!url || typeof url !== 'string') return '/';
+  const trimmed = url.trim();
+  // Deve iniciar com '/' e não com '//', '/\', ou esquemas como 'javascript:', 'https:'
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.startsWith('/\\')) {
+    return trimmed;
+  }
+  return '/';
+}
 
 export class SessionManager {
   private secret: string;
@@ -33,7 +53,7 @@ export class SessionManager {
   }
 
   verifyToken(token: string): AuthUser | null {
-    if (!token || !token.includes('.')) return null;
+    if (!token || typeof token !== 'string' || !token.includes('.')) return null;
 
     const [data, signature] = token.split('.');
     if (!data || !signature) return null;
@@ -43,14 +63,26 @@ export class SessionManager {
       .update(data)
       .digest('base64url');
 
+    const bufSig = Buffer.from(signature);
+    const bufExpected = Buffer.from(expectedSignature);
+
+    // Proteção contra falha de comprimento em crypto.timingSafeEqual
+    if (bufSig.length !== bufExpected.length) {
+      return null;
+    }
+
     // Previne timing attacks
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+    if (!crypto.timingSafeEqual(bufSig, bufExpected)) {
       return null;
     }
 
     try {
       const json = Buffer.from(data, 'base64url').toString('utf8');
       const user: AuthUser = JSON.parse(json);
+
+      if (!user || !user.email || typeof user.expiresAt !== 'number') {
+        return null;
+      }
 
       if (Date.now() > user.expiresAt) {
         return null;
@@ -59,6 +91,59 @@ export class SessionManager {
       return user;
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Gera token assinado anti-CSRF para o fluxo do Google OAuth2
+   */
+  createOAuthState(returnTo: string = '/'): string {
+    const payload: OAuthStatePayload = {
+      nonce: crypto.randomBytes(16).toString('hex'),
+      returnTo: sanitizeReturnUrl(returnTo),
+      timestamp: Date.now()
+    };
+    const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const signature = crypto
+      .createHmac('sha256', this.secret)
+      .update(`oauth_state:${data}`)
+      .digest('base64url');
+    return `${data}.${signature}`;
+  }
+
+  /**
+   * Valida o token anti-CSRF retornado pelo Google OAuth2
+   */
+  verifyOAuthState(state: string): { valid: boolean; returnTo: string } {
+    if (!state || typeof state !== 'string' || !state.includes('.')) {
+      return { valid: false, returnTo: '/' };
+    }
+
+    const [data, signature] = state.split('.');
+    if (!data || !signature) {
+      return { valid: false, returnTo: '/' };
+    }
+
+    const expectedSignature = crypto
+      .createHmac('sha256', this.secret)
+      .update(`oauth_state:${data}`)
+      .digest('base64url');
+
+    const bufSig = Buffer.from(signature);
+    const bufExpected = Buffer.from(expectedSignature);
+
+    if (bufSig.length !== bufExpected.length || !crypto.timingSafeEqual(bufSig, bufExpected)) {
+      return { valid: false, returnTo: '/' };
+    }
+
+    try {
+      const payload: OAuthStatePayload = JSON.parse(Buffer.from(data, 'base64url').toString('utf8'));
+      if (Date.now() - payload.timestamp > OAUTH_STATE_TTL_MS) {
+        return { valid: false, returnTo: '/' };
+      }
+      return { valid: true, returnTo: sanitizeReturnUrl(payload.returnTo) };
+    } catch {
+      return { valid: false, returnTo: '/' };
     }
   }
 
