@@ -8,6 +8,7 @@ import { authRouter } from './routes/auth.js';
 import { portalRouter } from './routes/portal.js';
 import { lookerRouter } from './routes/looker.js';
 import { integrationsRouter } from './routes/integrations.js';
+import { webhooksRouter } from './routes/webhooks.js';
 import { securityHeaders, createRateLimiter, appGatekeeper } from './middleware/security.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +52,9 @@ app.use('/api/portal', portalRouter);
 
 // Rotas do Conector Looker Studio (Protegidas por API Key)
 app.use('/api/looker', lookerLimiter, lookerRouter);
+
+// Rotas de Webhooks em Tempo Real (Shopify & Bagy)
+app.use('/api/webhooks', webhooksRouter);
 
 // Rotas Legadas de Status dos Conectores
 app.use('/api/integrations', integrationsRouter);

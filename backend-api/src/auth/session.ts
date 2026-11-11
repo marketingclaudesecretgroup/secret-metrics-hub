@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config.js';
+import { persistentStorage } from '../engine/storage.js';
 
 export interface AuthUser {
   id: string;
@@ -151,6 +152,9 @@ export class SessionManager {
     const token = this.createToken(user);
     const isProd = config.nodeEnv === 'production';
 
+    // Persiste a sessão no storage resiliente
+    persistentStorage.saveSession(user.id, user);
+
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: isProd,
@@ -160,7 +164,10 @@ export class SessionManager {
     });
   }
 
-  clearCookie(res: Response): void {
+  clearCookie(res: Response, userId?: string): void {
+    if (userId) {
+      persistentStorage.deleteSession(userId);
+    }
     res.clearCookie(COOKIE_NAME, {
       httpOnly: true,
       path: '/'

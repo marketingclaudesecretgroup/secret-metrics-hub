@@ -26,6 +26,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4000
 
+# Cria diretório de armazenamento persistente com permissões adequadas
+RUN mkdir -p /app/data && chown -R node:node /app/data
+
 # Cria usuário não-root por segurança
 USER node
 

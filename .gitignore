@@ -15,6 +15,12 @@ backend-api/node_modules/
 dist/
 backend-api/dist/
 
+# Persistent storage temporary and backup files
+backend-api/data/*.tmp*
+backend-api/data/*.bak
+data/*.tmp*
+data/*.bak
+
 # Environment files and credentials (CRITICAL: Never commit secrets)
 .env
 .env.local

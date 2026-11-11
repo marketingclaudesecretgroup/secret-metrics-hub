@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { config } from '../config.js';
+import { persistentStorage } from './storage.js';
 
 export interface ApiKeyRecord {
   id: string;
@@ -12,35 +13,9 @@ export interface ApiKeyRecord {
 }
 
 class ApiKeyStore {
-  private keys: Map<string, ApiKeyRecord> = new Map();
-
-  constructor() {
-    // Registra a Master API Key padrão
-    this.keys.set(config.masterApiKey, {
-      id: 'master-key',
-      name: 'Master Production Key (Looker Studio Oficial)',
-      key: config.masterApiKey,
-      createdAt: new Date().toISOString(),
-      lastUsedAt: new Date().toISOString(),
-      status: 'active',
-      usageCount: 142
-    });
-
-    // Registra uma chave para analistas de marketing
-    const analystKey = 'so_live_looker_secretoutlet_2026';
-    this.keys.set(analystKey, {
-      id: 'analyst-default-key',
-      name: 'Time de Tráfego & Performance Secret Outlet',
-      key: analystKey,
-      createdAt: new Date().toISOString(),
-      lastUsedAt: new Date(Date.now() - 3600000).toISOString(),
-      status: 'active',
-      usageCount: 38
-    });
-  }
-
   listKeys(): ApiKeyRecord[] {
-    return Array.from(this.keys.values()).map(k => ({
+    const keys = persistentStorage.getAllKeys();
+    return keys.map(k => ({
       ...k,
       // Mascara parte da chave para segurança visual no portal
       key: k.key.length > 12 ? `${k.key.substring(0, 8)}...${k.key.substring(k.key.length - 4)}` : k.key,
@@ -59,36 +34,34 @@ class ApiKeyStore {
       usageCount: 0
     };
 
-    this.keys.set(rawKey, record);
+    persistentStorage.saveKey(record);
     return record;
   }
 
   revokeKey(keyOrId: string): boolean {
-    for (const [key, record] of this.keys.entries()) {
-      if (record.id === keyOrId || key === keyOrId) {
-        if (record.id === 'master-key') {
-          return false; // Não permite revogar a master key padrão
-        }
-        record.status = 'revoked';
-        this.keys.set(key, record);
-        return true;
-      }
-    }
-    return false;
+    return persistentStorage.revokeKey(keyOrId);
   }
 
   isValidKey(candidateKey: string): boolean {
     if (!candidateKey) return false;
-    if (candidateKey === config.masterApiKey) return true;
+    
+    // Master key direto do config
+    if (candidateKey === config.masterApiKey) {
+      persistentStorage.recordKeyUsage(candidateKey);
+      return true;
+    }
 
-    const record = this.keys.get(candidateKey);
+    const record = persistentStorage.getKeyByValue(candidateKey);
     if (!record) return false;
     if (record.status !== 'active') return false;
 
-    // Registra uso
-    record.lastUsedAt = new Date().toISOString();
-    record.usageCount += 1;
+    // Registra uso no storage persistente
+    persistentStorage.recordKeyUsage(candidateKey);
     return true;
+  }
+
+  getKeyDetails(candidateKey: string): ApiKeyRecord | undefined {
+    return persistentStorage.getKeyByValue(candidateKey);
   }
 }
 

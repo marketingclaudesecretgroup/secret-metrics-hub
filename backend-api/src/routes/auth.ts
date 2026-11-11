@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { config } from '../config.js';
 import { sessionManager, AuthUser, sanitizeReturnUrl } from '../auth/session.js';
+import { persistentStorage } from '../engine/storage.js';
 
 export const authRouter = Router();
 
@@ -144,6 +145,15 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
     sessionManager.setCookie(res, user);
     console.log(`[Google OAuth] Login bem-sucedido: ${email} (${user.role})`);
 
+    persistentStorage.addAuditLog({
+      action: 'auth_login',
+      category: 'SECURITY',
+      actor: email,
+      ip: req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1',
+      status: 'SUCCESS',
+      details: { provider: 'google_workspace', role: user.role }
+    });
+
     const safeTarget = returnTo && returnTo !== '/login' ? returnTo : '/';
     return res.redirect(safeTarget);
   } catch (err: any) {
@@ -181,6 +191,15 @@ authRouter.post('/dev-login', (req: Request, res: Response) => {
 
   sessionManager.setCookie(res, user);
 
+  persistentStorage.addAuditLog({
+    action: 'auth_login',
+    category: 'SECURITY',
+    actor: email,
+    ip: req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1',
+    status: 'SUCCESS',
+    details: { provider: 'dev_login', role }
+  });
+
   return res.json({
     success: true,
     message: 'Login corporativo ativo com sucesso.',
@@ -193,7 +212,18 @@ authRouter.post('/dev-login', (req: Request, res: Response) => {
  * Logout corporativo (limpa o cookie de sessão)
  */
 authRouter.post('/logout', (req: Request, res: Response) => {
-  sessionManager.clearCookie(res);
+  const user = sessionManager.getUserFromRequest(req);
+  sessionManager.clearCookie(res, user?.id);
+
+  persistentStorage.addAuditLog({
+    action: 'auth_logout',
+    category: 'SECURITY',
+    actor: user?.email || 'desconhecido',
+    ip: req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1',
+    status: 'SUCCESS',
+    details: { userId: user?.id }
+  });
+
   return res.json({
     success: true,
     redirect: '/login',

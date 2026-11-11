@@ -1,0 +1,533 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-11T23:04:04.654Z",
+  "keys": {
+    "secret-outlet-looker-token-2026": {
+      "id": "master-key",
+      "name": "Master Production Key (Looker Studio Oficial)",
+      "key": "secret-outlet-looker-token-2026",
+      "createdAt": "2026-11-11T20:00:00.000Z",
+      "lastUsedAt": "2026-11-11T23:04:04.541Z",
+      "status": "active",
+      "usageCount": 146
+    },
+    "so_live_looker_secretoutlet_2026": {
+      "id": "analyst-default-key",
+      "name": "Time de Tráfego & Performance Secret Outlet",
+      "key": "so_live_looker_secretoutlet_2026",
+      "createdAt": "2026-11-11T20:00:00.000Z",
+      "lastUsedAt": "2026-11-11T20:00:00.000Z",
+      "status": "active",
+      "usageCount": 38
+    },
+    "so_live_d15d9ce8365c3bc992a5e61141e4aa2b": {
+      "id": "key_1794438221001_167",
+      "name": "Chave Persistente E2E Test 1794438220997",
+      "key": "so_live_d15d9ce8365c3bc992a5e61141e4aa2b",
+      "createdAt": "2026-11-11T23:03:41.001Z",
+      "status": "revoked",
+      "usageCount": 1,
+      "lastUsedAt": "2026-11-11T23:03:41.009Z"
+    },
+    "so_live_b1762aae3ed41b2553f29e7386e524ec": {
+      "id": "key_1794438244603_653",
+      "name": "Chave Persistente E2E Test 1794438244602",
+      "key": "so_live_b1762aae3ed41b2553f29e7386e524ec",
+      "createdAt": "2026-11-11T23:04:04.603Z",
+      "status": "revoked",
+      "usageCount": 1,
+      "lastUsedAt": "2026-11-11T23:04:04.611Z"
+    }
+  },
+  "sessions": {
+    "dev_1794438220983": {
+      "id": "dev_1794438220983",
+      "email": "admin@secretoutlet.com.br",
+      "name": "Secret Outlet Admin",
+      "picture": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces",
+      "domain": "secretoutlet.com.br",
+      "role": "admin",
+      "loginTime": 1794438220983,
+      "expiresAt": 1795043020983
+    },
+    "dev_1794438220989": {
+      "id": "dev_1794438220989",
+      "email": "admin@secretoutlet.com.br",
+      "name": "Secret Outlet Admin",
+      "picture": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces",
+      "domain": "secretoutlet.com.br",
+      "role": "admin",
+      "loginTime": 1794438220989,
+      "expiresAt": 1795043020989
+    },
+    "dev_1794438244584": {
+      "id": "dev_1794438244584",
+      "email": "admin@secretoutlet.com.br",
+      "name": "Secret Outlet Admin",
+      "picture": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces",
+      "domain": "secretoutlet.com.br",
+      "role": "admin",
+      "loginTime": 1794438244584,
+      "expiresAt": 1795043044584
+    },
+    "dev_1794438244591": {
+      "id": "dev_1794438244591",
+      "email": "admin@secretoutlet.com.br",
+      "name": "Secret Outlet Admin",
+      "picture": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces",
+      "domain": "secretoutlet.com.br",
+      "role": "admin",
+      "loginTime": 1794438244591,
+      "expiresAt": 1795043044591
+    }
+  },
+  "audit_logs": [
+    {
+      "id": "aud_1794438244654_5536",
+      "timestamp": "2026-11-11T23:04:04.654Z",
+      "action": "auth_logout",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "userId": "dev_1794438244548"
+      }
+    },
+    {
+      "id": "aud_1794438244636_743",
+      "timestamp": "2026-11-11T23:04:04.636Z",
+      "action": "webhook_shopify",
+      "category": "WEBHOOK",
+      "actor": "Simulador UI (admin@secretoutlet.com.br)",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 12,
+      "rowCount": 1,
+      "details": {
+        "orderId": "SHOPIFY-SIM-244636",
+        "platform": "shopify",
+        "totalAmount": 389,
+        "financialStatus": "paid",
+        "isSimulation": true,
+        "cacheCleared": true
+      }
+    },
+    {
+      "id": "aud_1794438244632_188",
+      "timestamp": "2026-11-11T23:04:04.632Z",
+      "action": "webhook_bagy",
+      "category": "WEBHOOK",
+      "actor": "Bagy Webhook Engine",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 0,
+      "rowCount": 1,
+      "details": {
+        "orderId": "BAGY-54321",
+        "status": "paid",
+        "totalAmount": 320,
+        "customerName": "Cliente Bagy Express",
+        "itemsCount": 1,
+        "cacheCleared": true
+      }
+    },
+    {
+      "id": "aud_1794438244628_1599",
+      "timestamp": "2026-11-11T23:04:04.628Z",
+      "action": "webhook_shopify",
+      "category": "WEBHOOK",
+      "actor": "Shopify Webhook Engine",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 0,
+      "rowCount": 1,
+      "details": {
+        "orderId": "SHOPIFY-1088",
+        "financialStatus": "paid",
+        "totalAmount": 489.9,
+        "currency": "BRL",
+        "customerEmail": "cliente.vip@secretoutlet.com.br",
+        "itemsCount": 2,
+        "cacheCleared": true,
+        "event": "orders/paid"
+      }
+    },
+    {
+      "id": "aud_1794438244622_1001",
+      "timestamp": "2026-11-11T23:04:04.622Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "so_live_...",
+      "ip": "::1",
+      "status": "FAILED",
+      "latencyMs": 0,
+      "details": {
+        "reason": "Chave não autorizada ou revogada"
+      }
+    },
+    {
+      "id": "aud_1794438244619_831",
+      "timestamp": "2026-11-11T23:04:04.619Z",
+      "action": "key_revoked",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "keyId": "key_1794438244603_653"
+      }
+    },
+    {
+      "id": "aud_1794438244613_1658",
+      "timestamp": "2026-11-11T23:04:04.613Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "so_live_...",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 2,
+      "rowCount": 1,
+      "details": {
+        "dataset": "consolidated_mer",
+        "startDate": "20261101",
+        "endDate": "20261111"
+      }
+    },
+    {
+      "id": "aud_1794438244604_8670",
+      "timestamp": "2026-11-11T23:04:04.604Z",
+      "action": "key_created",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "keyId": "key_1794438244603_653",
+        "name": "Chave Persistente E2E Test 1794438244602"
+      }
+    },
+    {
+      "id": "aud_1794438244594_213",
+      "timestamp": "2026-11-11T23:04:04.594Z",
+      "action": "auth_login",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "provider": "dev_login",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "aud_1794438244586_1263",
+      "timestamp": "2026-11-11T23:04:04.586Z",
+      "action": "auth_login",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "provider": "dev_login",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "aud_1794438244551_3948",
+      "timestamp": "2026-11-11T23:04:04.551Z",
+      "action": "auth_login",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "provider": "dev_login",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "aud_1794438244544_5233",
+      "timestamp": "2026-11-11T23:04:04.544Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "secret-o...",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 2,
+      "rowCount": 5,
+      "details": {
+        "dataset": "paid_media",
+        "startDate": "20261101",
+        "endDate": "20261111"
+      }
+    },
+    {
+      "id": "aud_1794438244536_1791",
+      "timestamp": "2026-11-11T23:04:04.536Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "secret-o...",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 4,
+      "rowCount": 1,
+      "details": {
+        "dataset": "consolidated_mer",
+        "startDate": "20261101",
+        "endDate": "20261111"
+      }
+    },
+    {
+      "id": "aud_1794438244528_2559",
+      "timestamp": "2026-11-11T23:04:04.528Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "Nenhum",
+      "ip": "::1",
+      "status": "FAILED",
+      "latencyMs": 0,
+      "details": {
+        "reason": "Chave não autorizada ou revogada"
+      }
+    },
+    {
+      "id": "aud_1794438221053_8141",
+      "timestamp": "2026-11-11T23:03:41.053Z",
+      "action": "auth_logout",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "userId": "dev_1794438220948"
+      }
+    },
+    {
+      "id": "aud_1794438221035_9031",
+      "timestamp": "2026-11-11T23:03:41.035Z",
+      "action": "webhook_shopify",
+      "category": "WEBHOOK",
+      "actor": "Simulador UI (admin@secretoutlet.com.br)",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 12,
+      "rowCount": 1,
+      "details": {
+        "orderId": "SHOPIFY-SIM-221035",
+        "platform": "shopify",
+        "totalAmount": 389,
+        "financialStatus": "paid",
+        "isSimulation": true,
+        "cacheCleared": true
+      }
+    },
+    {
+      "id": "aud_1794438221031_2251",
+      "timestamp": "2026-11-11T23:03:41.031Z",
+      "action": "webhook_bagy",
+      "category": "WEBHOOK",
+      "actor": "Bagy Webhook Engine",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 0,
+      "rowCount": 1,
+      "details": {
+        "orderId": "BAGY-54321",
+        "status": "paid",
+        "totalAmount": 320,
+        "customerName": "Cliente Bagy Express",
+        "itemsCount": 1,
+        "cacheCleared": true
+      }
+    },
+    {
+      "id": "aud_1794438221026_8102",
+      "timestamp": "2026-11-11T23:03:41.026Z",
+      "action": "webhook_shopify",
+      "category": "WEBHOOK",
+      "actor": "Shopify Webhook Engine",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 0,
+      "rowCount": 1,
+      "details": {
+        "orderId": "SHOPIFY-1088",
+        "financialStatus": "paid",
+        "totalAmount": 489.9,
+        "currency": "BRL",
+        "customerEmail": "cliente.vip@secretoutlet.com.br",
+        "itemsCount": 2,
+        "cacheCleared": true,
+        "event": "orders/paid"
+      }
+    },
+    {
+      "id": "aud_1794438221021_8014",
+      "timestamp": "2026-11-11T23:03:41.021Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "so_live_...",
+      "ip": "::1",
+      "status": "FAILED",
+      "latencyMs": 0,
+      "details": {
+        "reason": "Chave não autorizada ou revogada"
+      }
+    },
+    {
+      "id": "aud_1794438221017_6162",
+      "timestamp": "2026-11-11T23:03:41.017Z",
+      "action": "key_revoked",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "keyId": "key_1794438221001_167"
+      }
+    },
+    {
+      "id": "aud_1794438221011_7765",
+      "timestamp": "2026-11-11T23:03:41.011Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "so_live_...",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 2,
+      "rowCount": 1,
+      "details": {
+        "dataset": "consolidated_mer",
+        "startDate": "20261101",
+        "endDate": "20261111"
+      }
+    },
+    {
+      "id": "aud_1794438221003_1004",
+      "timestamp": "2026-11-11T23:03:41.003Z",
+      "action": "key_created",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "keyId": "key_1794438221001_167",
+        "name": "Chave Persistente E2E Test 1794438220997"
+      }
+    },
+    {
+      "id": "aud_1794438220992_8016",
+      "timestamp": "2026-11-11T23:03:40.992Z",
+      "action": "auth_login",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "provider": "dev_login",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "aud_1794438220985_8728",
+      "timestamp": "2026-11-11T23:03:40.985Z",
+      "action": "auth_login",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "provider": "dev_login",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "aud_1794438220951_2935",
+      "timestamp": "2026-11-11T23:03:40.951Z",
+      "action": "auth_login",
+      "category": "SECURITY",
+      "actor": "admin@secretoutlet.com.br",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "details": {
+        "provider": "dev_login",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "aud_1794438220943_209",
+      "timestamp": "2026-11-11T23:03:40.943Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "secret-o...",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 2,
+      "rowCount": 5,
+      "details": {
+        "dataset": "paid_media",
+        "startDate": "20261101",
+        "endDate": "20261111"
+      }
+    },
+    {
+      "id": "aud_1794438220936_4517",
+      "timestamp": "2026-11-11T23:03:40.936Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "secret-o...",
+      "ip": "::1",
+      "status": "SUCCESS",
+      "latencyMs": 4,
+      "rowCount": 1,
+      "details": {
+        "dataset": "consolidated_mer",
+        "startDate": "20261101",
+        "endDate": "20261111"
+      }
+    },
+    {
+      "id": "aud_1794438220927_7821",
+      "timestamp": "2026-11-11T23:03:40.928Z",
+      "action": "looker_query",
+      "category": "LOOKER",
+      "actor": "Nenhum",
+      "ip": "::1",
+      "status": "FAILED",
+      "latencyMs": 0,
+      "details": {
+        "reason": "Chave não autorizada ou revogada"
+      }
+    }
+  ],
+  "alerts": [
+    {
+      "id": "alert_mer_info_1794438244645",
+      "code": "MER_EXCELLENT",
+      "title": "MER de Alta Performance",
+      "category": "MER",
+      "severity": "success",
+      "currentValue": 11.64,
+      "threshold": 6,
+      "message": "MER excelente de 11.64x! Cada R$ 1,00 investido em tráfego pago gerou R$ 11.64 em receita confirmada.",
+      "recommendation": "Alavancagem positiva detectada. Recomendado aumentar orçamento diário de aquisição em até +15% para acelerar escala.",
+      "timestamp": "2026-11-11T23:04:04.645Z",
+      "acknowledged": true,
+      "acknowledgedAt": "2026-11-11T23:04:04.649Z"
+    },
+    {
+      "id": "alert_appr_warn_1794438244645",
+      "code": "APPROVAL_ATTENTION",
+      "title": "Taxa de Aprovação Abaixo do Padrão",
+      "category": "APPROVAL",
+      "severity": "warning",
+      "currentValue": 77.5,
+      "threshold": 80,
+      "message": "Taxa de aprovação em 77.5%. Desempenho moderado com oportunidade de ganho em checkout transparente.",
+      "recommendation": "Promover incentivos de pagamento instantâneo via PIX com desconto adicional.",
+      "timestamp": "2026-11-11T23:04:04.645Z",
+      "acknowledged": false
+    }
+  ]
+}

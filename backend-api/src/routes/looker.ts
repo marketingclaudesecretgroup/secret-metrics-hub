@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { DataAggregator } from '../engine/aggregator.js';
 import { LookerRequestPayload } from '../types/index.js';
 import { apiKeyStore } from '../engine/keys.js';
+import { persistentStorage } from '../engine/storage.js';
 
 export const lookerRouter = Router();
 const aggregator = new DataAggregator();
@@ -23,15 +24,38 @@ lookerRouter.get('/health', (req: Request, res: Response) => {
  * Método: POST /api/looker/data
  */
 lookerRouter.post('/data', async (req: Request, res: Response) => {
+  const start = performance.now();
+  const clientIp = (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1';
+
   try {
     const payload: LookerRequestPayload = req.body;
 
     if (!payload || typeof payload !== 'object') {
+      persistentStorage.addAuditLog({
+        action: 'looker_query',
+        category: 'LOOKER',
+        actor: 'desconhecido',
+        ip: clientIp,
+        status: 'FAILED',
+        latencyMs: Math.round(performance.now() - start),
+        details: { reason: 'Payload inválido' }
+      });
       return res.status(400).json({ error: 'Payload de requisição inválido.' });
     }
 
     // 1. Validação estrita da API Key do conector Looker Studio
     if (!payload.apiKey || typeof payload.apiKey !== 'string' || !apiKeyStore.isValidKey(payload.apiKey.trim())) {
+      const masked = payload.apiKey ? `${payload.apiKey.substring(0, 8)}...` : 'Nenhum';
+      persistentStorage.addAuditLog({
+        action: 'looker_query',
+        category: 'LOOKER',
+        actor: masked,
+        ip: clientIp,
+        status: 'FAILED',
+        latencyMs: Math.round(performance.now() - start),
+        details: { reason: 'Chave não autorizada ou revogada' }
+      });
+
       return res.status(401).json({
         error: 'Chave de API do conector não autorizada ou revogada.',
         hint: 'Gere uma chave ativa no portal da Secret Metrics.'
@@ -76,6 +100,24 @@ lookerRouter.post('/data', async (req: Request, res: Response) => {
         rows = await aggregator.getConsolidatedMER(startDate, endDate);
     }
 
+    const latencyMs = Math.round(performance.now() - start);
+
+    // Registra auditoria com sucesso
+    persistentStorage.addAuditLog({
+      action: 'looker_query',
+      category: 'LOOKER',
+      actor: `${payload.apiKey.trim().substring(0, 8)}...`,
+      ip: clientIp,
+      status: 'SUCCESS',
+      latencyMs,
+      rowCount: rows.length,
+      details: {
+        dataset,
+        startDate: startDate || 'padrão',
+        endDate: endDate || 'padrão'
+      }
+    });
+
     // 4. Retorno seguro para o conector Looker Studio
     return res.json({
       success: true,
@@ -84,7 +126,19 @@ lookerRouter.post('/data', async (req: Request, res: Response) => {
       rows
     });
   } catch (error: any) {
+    const latencyMs = Math.round(performance.now() - start);
     console.error('[LookerRouter] Erro ao processar requisição do Looker:', error);
+
+    persistentStorage.addAuditLog({
+      action: 'looker_query',
+      category: 'LOOKER',
+      actor: 'erro_sistema',
+      ip: clientIp,
+      status: 'FAILED',
+      latencyMs,
+      details: { error: error.message }
+    });
+
     return res.status(500).json({
       error: 'Erro interno ao processar dados para o Looker Studio.',
       details: error.message

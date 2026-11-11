@@ -2,6 +2,7 @@ import http from 'http';
 import axios from 'axios';
 import { spawn } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -180,7 +181,141 @@ async function runTests() {
     assert(resCallbackForged.status === 302, 'Callback com state inválido redireciona com 302');
     assert(resCallbackForged.headers.location === '/login?auth_error=invalid_state', 'Bloqueio CSRF com erro invalid_state');
 
-    console.log('\n--- 8. TESTE DE LOGOUT CORPORATIVO ---');
+    console.log('\n--- 8. TESTE DA CAMADA DE PERSISTÊNCIA ROBUSTA (STORAGE LAYER) ---');
+    // 1. Cria uma nova chave pelo portal autenticado
+    const keyName = 'Chave Persistente E2E Test ' + Date.now();
+    const resCreateKey = await client.post('/api/portal/keys', { name: keyName }, { headers: authHeaders });
+    assert(resCreateKey.status === 200, 'POST /api/portal/keys retorna 200');
+    assert(resCreateKey.data.success === true, 'Chave criada com sucesso no portal');
+    const newApiKey = resCreateKey.data.key.key;
+    const newKeyId = resCreateKey.data.key.id;
+    assert(!!newApiKey && newApiKey.startsWith('so_live_'), 'Formato da chave é válido (so_live_...)');
+
+    // 2. Inspeciona o arquivo data/storage.json diretamente no disco
+    const storageFilePath = path.join(__dirname, 'data', 'storage.json');
+    assert(fs.existsSync(storageFilePath), 'Arquivo data/storage.json existe no disco físico');
+    const storageRaw = fs.readFileSync(storageFilePath, 'utf8');
+    const storageParsed = JSON.parse(storageRaw);
+    assert(!!storageParsed.keys[newApiKey], 'Nova chave persistida imediatamente no arquivo data/storage.json');
+    assert(storageParsed.keys[newApiKey].name === keyName, 'Nome da chave coincide no arquivo persistente');
+    assert(!!storageParsed.keys['secret-outlet-looker-token-2026'], 'Master API Key preservada no storage persistente');
+
+    // 3. Valida que a nova chave funciona para consultas no Looker Studio
+    const resLookerWithNewKey = await client.post('/api/looker/data', {
+      apiKey: newApiKey,
+      dataset: 'consolidated_mer',
+      dateRange: { startDate: '20261101', endDate: '20261111' },
+      fields: ['date', 'mer']
+    });
+    assert(resLookerWithNewKey.status === 200, 'Looker aceita a chave recém-criada');
+    assert(resLookerWithNewKey.data.rows.length > 0, 'Retorna linhas de métricas com a nova chave');
+
+    // 4. Revoga a chave e verifica que deixa de funcionar
+    const resRevoke = await client.delete(`/api/portal/keys/${newKeyId}`, { headers: authHeaders });
+    assert(resRevoke.status === 200, 'DELETE /api/portal/keys/:id retorna 200');
+    
+    // Consulta Looker com a chave revogada deve ser rejeitada
+    const resLookerRevoked = await client.post('/api/looker/data', {
+      apiKey: newApiKey,
+      dataset: 'consolidated_mer'
+    });
+    assert(resLookerRevoked.status === 401, 'Looker rejeita chave revogada com 401 Unauthorized');
+
+    console.log('\n--- 9. TESTE DE WEBHOOKS EM TEMPO REAL (SHOPIFY & BAGY) ---');
+    // 1. Webhook Shopify Order
+    const resShopifyWebhook = await client.post('/api/webhooks/shopify/orders', {
+      id: 99123841,
+      order_number: 1088,
+      total_price: '489.90',
+      financial_status: 'paid',
+      customer: { email: 'cliente.vip@secretoutlet.com.br' },
+      line_items: [{ title: 'Camiseta Osklen', price: '249.90' }, { title: 'Bermuda Reserva', price: '240.00' }]
+    }, {
+      headers: {
+        'x-webhook-test-mode': 'true',
+        'x-shopify-topic': 'orders/paid',
+        'Content-Type': 'application/json'
+      }
+    });
+    assert(resShopifyWebhook.status === 200, 'POST /api/webhooks/shopify/orders retorna 200');
+    assert(resShopifyWebhook.data.success === true, 'Webhook Shopify reporta success: true');
+    assert(resShopifyWebhook.data.cacheInvalidated === true, 'Invalidação imediata de cache confirmada');
+    assert(resShopifyWebhook.data.platform === 'shopify', 'Plataforma identificada como shopify');
+
+    // 2. Webhook Bagy Order
+    const resBagyWebhook = await client.post('/api/webhooks/bagy/orders', {
+      id: 54321,
+      total: '320.00',
+      status: 'paid',
+      customer: { name: 'Cliente Bagy Express' }
+    }, {
+      headers: {
+        'x-webhook-test-mode': 'true',
+        'Content-Type': 'application/json'
+      }
+    });
+    assert(resBagyWebhook.status === 200, 'POST /api/webhooks/bagy/orders retorna 200');
+    assert(resBagyWebhook.data.cacheInvalidated === true, 'Invalidação de cache confirmada na Bagy');
+    assert(resBagyWebhook.data.platform === 'bagy', 'Plataforma identificada como bagy');
+
+    // 3. Simulador de Webhook via Portal SaaS
+    const resSimulateWebhook = await client.post('/api/portal/webhooks/simulate', {
+      platform: 'shopify',
+      amount: 389.00
+    }, { headers: authHeaders });
+    assert(resSimulateWebhook.status === 200, 'POST /api/portal/webhooks/simulate retorna 200');
+    assert(resSimulateWebhook.data.cacheInvalidated === true, 'Simulação valida renovação de cache');
+
+    console.log('\n--- 10. TESTE DA TRILHA DE AUDITORIA & COMPLIANCE ---');
+    // 1. Busca logs da trilha de auditoria
+    const resAudit = await client.get('/api/portal/audit-logs', { headers: authHeaders });
+    assert(resAudit.status === 200, 'GET /api/portal/audit-logs retorna 200');
+    assert(resAudit.data.success === true, 'Auditoria reporta success: true');
+    assert(Array.isArray(resAudit.data.logs), 'Retorna lista de logs');
+    assert(resAudit.data.total > 0, 'Total de logs maior que zero');
+
+    // 2. Valida que a consulta do Looker foi registrada com latência e status
+    const lookerLog = resAudit.data.logs.find(l => l.action === 'looker_query');
+    assert(!!lookerLog, 'Consulta do Looker Studio registrada na trilha de auditoria');
+    assert(lookerLog && typeof lookerLog.latencyMs === 'number', 'Latência de execução gravada no log');
+
+    // 3. Valida que os webhooks foram registrados na trilha de auditoria
+    const webhookLog = resAudit.data.logs.find(l => l.category === 'WEBHOOK');
+    assert(!!webhookLog, 'Webhook registrado na trilha de auditoria');
+    assert(webhookLog && webhookLog.status === 'SUCCESS', 'Status do webhook registrado como SUCCESS');
+
+    // 4. Valida que criação e revogação de chaves foram auditadas
+    const keyLog = resAudit.data.logs.find(l => l.action === 'key_created');
+    assert(!!keyLog, 'Ação de criação de chave auditada com identificador do ator');
+
+    // 5. Teste de filtro por categoria
+    const resAuditFilter = await client.get('/api/portal/audit-logs?category=SECURITY', { headers: authHeaders });
+    assert(resAuditFilter.status === 200, 'Filtro por categoria SECURITY retorna 200');
+    assert(resAuditFilter.data.logs.every(l => l.category === 'SECURITY'), 'Todos os logs filtrados pertencem a SECURITY');
+
+    console.log('\n--- 11. TESTE DO MOTOR DE MONITORAMENTO & ALERTAS DE ANOMALIA ---');
+    // 1. Busca alertas e diagnósticos de saúde
+    const resAlerts = await client.get('/api/portal/alerts', { headers: authHeaders });
+    assert(resAlerts.status === 200, 'GET /api/portal/alerts retorna 200');
+    assert(resAlerts.data.success === true, 'Avaliação de saúde executada');
+    assert(['HEALTHY', 'ATTENTION', 'CRITICAL'].includes(resAlerts.data.status), 'Status global é HEALTHY, ATTENTION ou CRITICAL');
+    assert(typeof resAlerts.data.score === 'number', 'Score numérico de saúde de 0 a 100 calculado');
+    assert(Array.isArray(resAlerts.data.alerts), 'Lista de alertas retornada como array');
+    assert(typeof resAlerts.data.metrics.mer === 'number', 'Métrica MER avaliada pelo motor');
+    assert(typeof resAlerts.data.metrics.blendedCpa === 'number', 'Métrica Blended CPA avaliada');
+    assert(typeof resAlerts.data.metrics.approvalRate === 'number', 'Métrica Taxa de Aprovação avaliada');
+
+    // 2. Reconhecimento de alerta se houver algum
+    if (resAlerts.data.alerts.length > 0) {
+      const firstAlertId = resAlerts.data.alerts[0].id;
+      const resAck = await client.post(`/api/portal/alerts/${firstAlertId}/ack`, {}, { headers: authHeaders });
+      assert(resAck.status === 200, 'POST /api/portal/alerts/:id/ack retorna 200');
+      assert(resAck.data.success === true, 'Alerta reconhecido com sucesso');
+    } else {
+      console.log('  ℹ️ Nenhum alerta anômalo pendente (operação 100% saudável)');
+    }
+
+    console.log('\n--- 12. TESTE DE LOGOUT CORPORATIVO ---');
     const resLogout = await client.post('/api/auth/logout', {}, { headers: authHeaders });
     assert(resLogout.status === 200, '/api/auth/logout retorna 200');
     assert(resLogout.data.redirect === '/login', 'Resposta de logout indica redirecionamento para /login');

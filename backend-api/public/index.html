@@ -138,6 +138,10 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
           Templates de Relatório
         </button>
+        <button onclick="switchTab('audit')" class="tab-btn px-3.5 py-2 rounded-lg hover:text-white transition-all flex items-center gap-2" data-tab="audit">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Auditoria & Logs
+        </button>
       </nav>
 
       <!-- Right User Controls & Auth Action -->
@@ -170,6 +174,7 @@
     <button onclick="switchTab('connectors')" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="connectors">Conectores</button>
     <button onclick="switchTab('looker')" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="looker">Central Looker</button>
     <button onclick="switchTab('templates')" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="templates">Templates</button>
+    <button onclick="switchTab('audit')" class="tab-btn px-3 py-1.5 rounded-lg whitespace-nowrap" data-tab="audit">Auditoria</button>
   </div>
 
   <!-- Notification Banner (Auth, Error, Feedback) -->
@@ -254,6 +259,35 @@
         </div>
       </div>
 
+      <!-- Real-Time Anomaly & Health Monitor Widget -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-7 border-white/10 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+          <div class="flex items-center gap-3">
+            <div id="healthStatusIndicator" class="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-lg">
+              🛡️
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-bold text-white">Monitor de Saúde & Anomalias em Tempo Real</h2>
+                <span id="healthScoreBadge" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  98/100 • Saudável
+                </span>
+              </div>
+              <p class="text-xs text-gray-400">Diagnóstico contínuo dos limiares de MER (&lt;4.0x / &gt;6.0x), CPA Blended (&gt;R$45) e Aprovação (&lt;75%)</p>
+            </div>
+          </div>
+          <button onclick="loadAlerts()" class="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium border border-white/10 flex items-center gap-2 self-start sm:self-auto transition-all">
+            <span class="text-brand-400">↻</span>
+            <span>Reavaliar Métricas</span>
+          </button>
+        </div>
+
+        <!-- Alerts Cards Container -->
+        <div id="alertsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Gerado dinamicamente via loadAlerts() -->
+        </div>
+      </div>
+
       <!-- Trend Chart & Channel Breakdown -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
@@ -327,6 +361,36 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           <span>Testar Todos os Conectores</span>
         </button>
+      </div>
+
+      <!-- Real-Time Webhook Simulator (Shopify & Bagy) -->
+      <div class="glass-panel p-6 sm:p-7 rounded-3xl border-brand-500/20 relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-medium text-emerald-400 mb-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              Webhook Engine v1.0 • Invalidação Instantânea de Cache
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1">Simulador de Webhooks em Tempo Real</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Ao receber um pedido pago via webhook da <strong>Shopify</strong> (<code class="text-emerald-400 font-mono">/api/webhooks/shopify/orders</code>) ou <strong>Bagy</strong> (<code class="text-cyan-400 font-mono">/api/webhooks/bagy/orders</code>), o cache em memória é invalidado na hora e a auditoria é registrada.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button onclick="simulateWebhook('shopify', 389.00)" id="btnSimShopify" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
+              <span>🛍️ Simular Pedido Shopify (R$ 389)</span>
+            </button>
+            <button onclick="simulateWebhook('bagy', 215.00)" id="btnSimBagy" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2">
+              <span>📦 Simular Pedido Bagy (R$ 215)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Real-time Webhook Execution Feedback Box -->
+        <div id="webhookFeedbackBox" class="hidden mt-4 pt-4 border-t border-white/5 font-mono text-xs text-gray-300 bg-obsidian-900/60 p-4 rounded-2xl border border-white/5">
+          <!-- Gerado via simulateWebhook() -->
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="connectorsDetailList">
@@ -509,6 +573,95 @@
       </div>
     </div>
 
+    <!-- ============================================== -->
+    <!-- TAB 5: TRILHA DE AUDITORIA & COMPLIANCE        -->
+    <!-- ============================================== -->
+    <div id="tab-audit" class="tab-content hidden space-y-6">
+      
+      <!-- Audit Header & 4 Stats Cards -->
+      <div class="glass-panel p-6 rounded-3xl border-white/5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-medium text-cyan-400 mb-2">
+              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+              Audit Trail & Compliance Engine • Storage Persistente
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-1">Trilha de Auditoria & Segurança</h2>
+            <p class="text-sm text-gray-400">Rastreabilidade completa de cada consulta do Looker Studio, disparos de webhooks, autenticações corporativas e chaves geradas.</p>
+          </div>
+          <button onclick="loadAuditLogs()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs border border-white/10 transition-all flex items-center gap-2 self-start sm:self-auto">
+            <span class="text-cyan-400">↻</span>
+            <span>Atualizar Logs</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Total de Logs</span>
+            <div class="text-2xl font-black text-white font-mono" id="auditStatTotal">-</div>
+            <div class="text-[10px] text-gray-400 mt-1">Armazenamento Atômico</div>
+          </div>
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Consultas Looker (24h)</span>
+            <div class="text-2xl font-black text-emerald-400 font-mono" id="auditStatLooker">-</div>
+            <div class="text-[10px] text-gray-400 mt-1">Requisições do conector</div>
+          </div>
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Webhooks (24h)</span>
+            <div class="text-2xl font-black text-cyan-400 font-mono" id="auditStatWebhooks">-</div>
+            <div class="text-[10px] text-gray-400 mt-1">Shopify & Bagy Orders</div>
+          </div>
+          <div class="glass-panel p-4 rounded-2xl border-white/5">
+            <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider block mb-1">Taxa de Sucesso</span>
+            <div class="text-2xl font-black text-brand-400 font-mono" id="auditStatSuccess">100%</div>
+            <div class="text-[10px] text-gray-400 mt-1">Sem falhas críticas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Search Bar -->
+      <div class="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <select id="auditCategoryFilter" onchange="loadAuditLogs()" class="glass-input px-3 py-2 rounded-xl text-xs text-gray-200">
+            <option value="">Todas as Categorias</option>
+            <option value="LOOKER">Looker Studio</option>
+            <option value="WEBHOOK">Webhooks (Shopify/Bagy)</option>
+            <option value="SECURITY">Segurança & Autenticação</option>
+          </select>
+          <input type="text" id="auditSearchInput" onkeyup="if(event.key==='Enter') loadAuditLogs()" placeholder="Buscar ator, IP, ação..." class="glass-input px-3 py-2 rounded-xl text-xs text-gray-200 w-full sm:w-64" />
+        </div>
+        <div class="text-xs font-mono text-gray-400 self-end sm:self-auto">
+          Exibindo últimos registros persistidos
+        </div>
+      </div>
+
+      <!-- Audit Logs Table -->
+      <div class="glass-panel rounded-3xl overflow-hidden border-white/5">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-white/5 text-gray-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+              <tr>
+                <th class="py-3 px-4">Timestamp</th>
+                <th class="py-3 px-4">Categoria</th>
+                <th class="py-3 px-4">Ação</th>
+                <th class="py-3 px-4">Ator / Chave</th>
+                <th class="py-3 px-4">IP Origem</th>
+                <th class="py-3 px-4">Latência</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Detalhes</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody" class="divide-y divide-white/5 text-gray-300">
+              <tr>
+                <td colspan="8" class="py-8 text-center text-gray-500 font-mono text-xs">Carregando trilha de auditoria...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
   </main>
 
   <!-- Google Workspace Login Modal (Linear Aesthetic) -->
@@ -565,6 +718,10 @@
         loadConnectorsDetail();
       } else if (tabId === 'templates') {
         loadTemplates();
+      } else if (tabId === 'audit') {
+        loadAuditLogs();
+      } else if (tabId === 'overview') {
+        refreshOverviewData();
       }
     }
 
@@ -673,8 +830,230 @@
         });
 
         loadOverviewConnectorsGrid();
+        loadAlerts();
       } catch (err) {
         console.error('Erro ao atualizar overview:', err);
+      }
+    }
+
+    // Anomaly Alerts & Health Monitor
+    async function loadAlerts() {
+      try {
+        const res = await fetch('/api/portal/alerts');
+        if (res.status === 401) return;
+        const data = await res.json();
+        if (!data.success) return;
+
+        const badge = document.getElementById('healthScoreBadge');
+        const icon = document.getElementById('healthStatusIndicator');
+        const container = document.getElementById('alertsContainer');
+        if (!badge || !icon || !container) return;
+
+        container.innerHTML = '';
+
+        if (data.status === 'HEALTHY') {
+          badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+          badge.textContent = `${data.score}/100 • Operação Saudável`;
+          icon.className = 'w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-lg';
+          icon.textContent = '🟢';
+        } else if (data.status === 'ATTENTION') {
+          badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+          badge.textContent = `${data.score}/100 • Em Atenção`;
+          icon.className = 'w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-lg';
+          icon.textContent = '🟡';
+        } else {
+          badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse';
+          badge.textContent = `${data.score}/100 • Risco Crítico`;
+          icon.className = 'w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 font-bold text-lg';
+          icon.textContent = '🔴';
+        }
+
+        if (data.alerts.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full py-6 text-center text-xs font-mono text-emerald-400 glass-panel rounded-2xl">
+              ✓ Nenhuma anomalia detectada. MER, CPA e Taxa de Aprovação operando dentro das metas.
+            </div>
+          `;
+          return;
+        }
+
+        data.alerts.forEach(a => {
+          const card = document.createElement('div');
+          const isCrit = a.severity === 'critical';
+          const isWarn = a.severity === 'warning';
+          const borderClass = isCrit ? 'border-rose-500/30 bg-rose-950/20' : (isWarn ? 'border-amber-500/30 bg-amber-950/20' : 'border-emerald-500/30 bg-emerald-950/20');
+          const pillClass = isCrit ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : (isWarn ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20');
+
+          card.className = `p-4 rounded-2xl border ${borderClass} flex flex-col justify-between`;
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border ${pillClass}">
+                  ${a.category} • ${a.severity.toUpperCase()}
+                </span>
+                <span class="text-[10px] font-mono text-gray-400">Limiar: ${a.threshold}</span>
+              </div>
+              <h4 class="font-bold text-white text-sm mb-1">${a.title}</h4>
+              <p class="text-xs text-gray-300 mb-2 leading-relaxed">${a.message}</p>
+              <div class="text-[11px] text-gray-400 bg-black/40 p-2.5 rounded-xl border border-white/5 mb-3">
+                <strong class="text-white">Recomendação Estratégica:</strong> ${a.recommendation}
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] font-mono text-gray-400">
+              <span>Valor: <strong class="text-white">${a.currentValue}</strong></span>
+              <button onclick="acknowledgeAlert('${a.id}')" class="text-xs text-gray-400 hover:text-white underline">
+                ${a.acknowledged ? '✓ Reconhecido' : 'Reconhecer'}
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Erro ao carregar alertas:', err);
+      }
+    }
+
+    async function acknowledgeAlert(id) {
+      try {
+        await fetch(`/api/portal/alerts/${id}/ack`, { method: 'POST' });
+        showToast('Alerta reconhecido pela equipe.');
+        loadAlerts();
+      } catch (err) {
+        showToast('Erro: ' + err.message, 'error');
+      }
+    }
+
+    // Webhook Simulation (Real-Time Order Test)
+    async function simulateWebhook(platform, amount) {
+      const btn = platform === 'shopify' ? document.getElementById('btnSimShopify') : document.getElementById('btnSimBagy');
+      const feedback = document.getElementById('webhookFeedbackBox');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50');
+      }
+
+      try {
+        const res = await fetch('/api/portal/webhooks/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ platform, amount })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast(`⚡ Pedido ${data.orderId} (R$ ${amount}) recebido! Cache de métricas renovado.`, 'success');
+          
+          feedback.classList.remove('hidden');
+          feedback.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-emerald-400 font-bold mb-1">
+              <span>✓ WEBHOOK PROCESSADO COM SUCESSO (HTTP 200 OK)</span>
+              <span class="text-gray-400 text-[11px]">${data.timestamp}</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-gray-300 mt-2">
+              <div>Plataforma: <strong class="text-white uppercase">${data.platform}</strong></div>
+              <div>ID Pedido: <strong class="text-white">${data.orderId}</strong></div>
+              <div>Valor Total: <strong class="text-emerald-400">R$ ${data.totalAmount.toFixed(2)}</strong></div>
+              <div>Cache Invalidação: <strong class="text-brand-400">IMEDIATA (globalCache.clear())</strong></div>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <span class="text-[10px] text-gray-400">Audit Log ID: ${data.auditLogId}</span>
+              <button onclick="switchTab('audit')" class="text-xs text-brand-400 hover:text-brand-300 underline font-sans font-semibold">
+                Ver na Trilha de Auditoria ↗
+              </button>
+            </div>
+          `;
+
+          // Atualiza dados na tela imediatamente
+          refreshOverviewData();
+        } else {
+          showToast(`Erro ao simular webhook: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        showToast('Falha na requisição de webhook: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-50');
+        }
+      }
+    }
+
+    // Audit Logs Loader
+    async function loadAuditLogs() {
+      const categoryFilter = document.getElementById('auditCategoryFilter');
+      const searchInput = document.getElementById('auditSearchInput');
+      const category = categoryFilter ? categoryFilter.value : '';
+      const search = searchInput ? searchInput.value.trim() : '';
+      const tbody = document.getElementById('auditTableBody');
+      if (!tbody) return;
+
+      try {
+        const query = new URLSearchParams();
+        if (category) query.set('category', category);
+        if (search) query.set('search', search);
+        query.set('limit', '40');
+
+        const res = await fetch(`/api/portal/audit-logs?${query.toString()}`);
+        if (res.status === 401) {
+          window.location.replace('/login');
+          return;
+        }
+
+        const data = await res.json();
+        if (!data.success) return;
+
+        // Atualiza stats
+        const statTotal = document.getElementById('auditStatTotal');
+        const statLooker = document.getElementById('auditStatLooker');
+        const statWebhooks = document.getElementById('auditStatWebhooks');
+        if (statTotal) statTotal.textContent = data.total.toLocaleString('pt-BR');
+        if (statLooker) statLooker.textContent = data.totalQueries24h.toLocaleString('pt-BR');
+        if (statWebhooks) statWebhooks.textContent = data.totalWebhooks24h.toLocaleString('pt-BR');
+
+        tbody.innerHTML = '';
+        if (data.logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-gray-500 font-mono text-xs">Nenhum registro encontrado para os filtros selecionados.</td></tr>';
+          return;
+        }
+
+        data.logs.forEach(l => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-white/5 transition-colors';
+
+          let categoryBadge = 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+          if (l.category === 'LOOKER') categoryBadge = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+          else if (l.category === 'WEBHOOK') categoryBadge = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+          else if (l.category === 'SECURITY') categoryBadge = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+          else if (l.category === 'ALERT') categoryBadge = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+
+          const formattedDate = new Date(l.timestamp).toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+          });
+
+          const statusBadge = l.status === 'SUCCESS' 
+            ? '<span class="text-emerald-400 font-bold">✓ 200</span>' 
+            : '<span class="text-rose-400 font-bold">✗ FALHA</span>';
+
+          const detailsStr = l.details ? JSON.stringify(l.details) : '-';
+
+          tr.innerHTML = `
+            <td class="py-3 px-4 whitespace-nowrap text-gray-400">${formattedDate}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${categoryBadge}">${l.category}</span>
+            </td>
+            <td class="py-3 px-4 font-bold text-white">${l.action}</td>
+            <td class="py-3 px-4 text-gray-300 font-mono truncate max-w-[140px]" title="${l.actor}">${l.actor}</td>
+            <td class="py-3 px-4 text-gray-400 font-mono">${l.ip}</td>
+            <td class="py-3 px-4 text-gray-300">${l.latencyMs !== undefined ? `${l.latencyMs}ms` : '-'}</td>
+            <td class="py-3 px-4">${statusBadge}</td>
+            <td class="py-3 px-4 text-[11px] text-gray-400 truncate max-w-xs font-mono" title="${detailsStr}">${detailsStr}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-rose-400">Erro ao carregar auditoria: ${err.message}</td></tr>`;
       }
     }
 

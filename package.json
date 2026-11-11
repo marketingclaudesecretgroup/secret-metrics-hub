@@ -1,0 +1,12 @@
+{
+  "name": "secret-metrics-hub",
+  "version": "1.0.0",
+  "description": "API Hub Unificada de Métricas e Conector Looker Studio para Secret Outlet",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix backend-api run build",
+    "test": "npm --prefix backend-api test",
+    "start": "npm --prefix backend-api start",
+    "dev": "npm --prefix backend-api run dev"
+  }
+}

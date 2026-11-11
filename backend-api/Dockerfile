@@ -20,6 +20,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4000
 
+# Cria diretório de armazenamento persistente com permissões adequadas
+RUN mkdir -p /app/data && chown -R node:node /app/data
+
 USER node
 
 COPY --chown=node:node --from=builder /app/package*.json ./

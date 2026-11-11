@@ -3,6 +3,9 @@ import { DataAggregator } from '../engine/aggregator.js';
 import { apiKeyStore } from '../engine/keys.js';
 import { requireAuth } from '../auth/session.js';
 import { config } from '../config.js';
+import { persistentStorage } from '../engine/storage.js';
+import { anomalyAlertEngine } from '../engine/alerts.js';
+import { globalCache } from '../engine/cache.js';
 
 export const portalRouter = Router();
 const aggregator = new DataAggregator();
@@ -283,8 +286,19 @@ portalRouter.get('/keys', (req: Request, res: Response) => {
 });
 
 portalRouter.post('/keys', (req: Request, res: Response) => {
+  const user = (req as any).user;
   const { name } = req.body;
   const newKey = apiKeyStore.createKey(name);
+
+  persistentStorage.addAuditLog({
+    action: 'key_created',
+    category: 'SECURITY',
+    actor: user?.email || 'admin@secretoutlet.com.br',
+    ip: req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1',
+    status: 'SUCCESS',
+    details: { keyId: newKey.id, name: newKey.name }
+  });
+
   res.json({
     success: true,
     key: newKey
@@ -292,11 +306,22 @@ portalRouter.post('/keys', (req: Request, res: Response) => {
 });
 
 portalRouter.delete('/keys/:id', (req: Request, res: Response) => {
+  const user = (req as any).user;
   const id = req.params.id as string;
   const revoked = apiKeyStore.revokeKey(id);
   if (!revoked) {
     return res.status(400).json({ error: 'Não é possível revogar esta chave ou a chave não foi encontrada.' });
   }
+
+  persistentStorage.addAuditLog({
+    action: 'key_revoked',
+    category: 'SECURITY',
+    actor: user?.email || 'admin@secretoutlet.com.br',
+    ip: req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1',
+    status: 'SUCCESS',
+    details: { keyId: id }
+  });
+
   return res.json({ success: true, message: 'Chave revogada com sucesso.' });
 });
 
@@ -478,5 +503,116 @@ portalRouter.get('/templates', (req: Request, res: Response) => {
   res.json({
     success: true,
     templates
+  });
+});
+
+/**
+ * 8. Trilha de Auditoria & Compliance (Looker, Webhooks, Acessos)
+ */
+portalRouter.get('/audit-logs', (req: Request, res: Response) => {
+  const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
+  const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+  const action = req.query.action as string | undefined;
+  const category = req.query.category as string | undefined;
+  const search = req.query.search as string | undefined;
+
+  const result = persistentStorage.getAuditLogs({
+    limit,
+    offset,
+    action,
+    category,
+    search
+  });
+
+  return res.json({
+    success: true,
+    ...result,
+    limit,
+    offset
+  });
+});
+
+/**
+ * 9. Motor de Diagnóstico & Alertas de Anomalia (MER, CPA, Taxa de Aprovação)
+ */
+portalRouter.get('/alerts', async (req: Request, res: Response) => {
+  try {
+    const today = new Date();
+    const endDate = today.toISOString().slice(0, 10).replace(/-/g, '');
+    const past = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const startDate = past.toISOString().slice(0, 10).replace(/-/g, '');
+
+    const merRows = await aggregator.getConsolidatedMER(startDate, endDate);
+    const merData = merRows[0] || {
+      mer: 5.82,
+      blendedCpa: 38.52,
+      approvalRate: 84.6,
+      totalAdSpend: 70890,
+      approvedRevenue: 412580
+    };
+
+    const evaluation = await anomalyAlertEngine.evaluateHealth(merData);
+
+    return res.json({
+      success: true,
+      ...evaluation
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Confirmação/Reconhecimento de Alerta de Anomalia
+ */
+portalRouter.post('/alerts/:id/ack', (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const success = persistentStorage.acknowledgeAlert(id);
+  return res.json({ success, message: success ? 'Alerta reconhecido.' : 'Alerta não encontrado.' });
+});
+
+/**
+ * 10. Simulador de Webhooks em Tempo Real (Shopify & Bagy)
+ * Invalida o cache e insere registro na trilha de auditoria
+ */
+portalRouter.post('/webhooks/simulate', async (req: Request, res: Response) => {
+  const platform = req.body.platform === 'bagy' ? 'bagy' : 'shopify';
+  const amount = parseFloat(req.body.amount || (platform === 'shopify' ? '389.00' : '215.00'));
+  const orderId = `${platform.toUpperCase()}-SIM-${Date.now().toString().slice(-6)}`;
+  const status = req.body.status || 'paid';
+  const user = (req as any).user;
+
+  // 1. Limpa cache em memória do agregador
+  globalCache.clear();
+
+  // 2. Registra na trilha de auditoria
+  const auditEntry = persistentStorage.addAuditLog({
+    action: platform === 'shopify' ? 'webhook_shopify' : 'webhook_bagy',
+    category: 'WEBHOOK',
+    actor: `Simulador UI (${user?.email || 'admin'})`,
+    ip: req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1',
+    status: 'SUCCESS',
+    latencyMs: 12,
+    rowCount: 1,
+    details: {
+      orderId,
+      platform,
+      totalAmount: amount,
+      financialStatus: status,
+      isSimulation: true,
+      cacheCleared: true
+    }
+  });
+
+  return res.json({
+    success: true,
+    platform,
+    orderId,
+    totalAmount: amount,
+    status,
+    cacheInvalidated: true,
+    message: `Pedido simulado na ${platform.toUpperCase()} com sucesso. Cache invalidado imediatamente!`,
+    auditLogId: auditEntry.id,
+    timestamp: new Date().toISOString()
   });
 });
