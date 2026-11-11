@@ -20,7 +20,7 @@ export const config = {
       .map(e => e.trim().toLowerCase())
       .filter(Boolean),
     sessionSecret: process.env.SESSION_SECRET || 'secret-metrics-super-secure-session-key-2026',
-    devLoginEnabled: process.env.DEV_LOGIN_ENABLED !== 'false' // Habilitado por padrão em dev/staging
+    devLoginEnabled: process.env.DEV_LOGIN_ENABLED === 'true' // Desabilitado por padrão (100% Google Workspace oficial)
   },
 
   // Secret Outlet E-commerce

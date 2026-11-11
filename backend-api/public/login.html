@@ -164,45 +164,6 @@
           </div>
         </div>
 
-        <!-- Dev & Demo Section (Accordion) -->
-        <div id="devLoginContainer" class="mt-8 pt-6 border-t border-white/10">
-          <button 
-            type="button" 
-            onclick="toggleDevLogin()" 
-            class="w-full flex items-center justify-between text-left text-xs font-mono text-gray-400 hover:text-emerald-400 transition-colors py-1"
-          >
-            <span class="flex items-center gap-2">
-              <span class="text-emerald-400">⚡</span>
-              <span>Acesso Rápido de Homologação (Dev)</span>
-            </span>
-            <span id="devToggleIcon" class="text-xs transition-transform duration-200">▾</span>
-          </button>
-
-          <div id="devLoginOptions" class="hidden mt-4 space-y-2.5">
-            <button 
-              onclick="loginAsDev('admin')"
-              class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-emerald-500/10 text-gray-200 hover:text-emerald-300 border border-white/10 hover:border-emerald-500/30 font-medium text-xs flex items-center justify-between transition-all"
-            >
-              <div class="flex items-center gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span class="text-left font-mono">Admin Corporativo</span>
-              </div>
-              <span class="text-[10px] font-mono text-gray-400">admin@secretoutlet.com.br</span>
-            </button>
-
-            <button 
-              onclick="loginAsDev('analyst')"
-              class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/10 text-gray-200 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 font-medium text-xs flex items-center justify-between transition-all"
-            >
-              <div class="flex items-center gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-                <span class="text-left font-mono">Head de Growth & Mídia</span>
-              </div>
-              <span class="text-[10px] font-mono text-gray-400">growth@secretoutlet.com.br</span>
-            </button>
-          </div>
-        </div>
-
         <!-- Security & Compliance Trust Badges -->
         <div class="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 gap-3 text-[11px] font-mono text-gray-400">
           <div class="flex items-center gap-2">
@@ -323,47 +284,12 @@
           spinner.classList.add('hidden');
           
           alert(data.error || 'Configure o GOOGLE_CLIENT_ID nas variáveis de ambiente.');
-          toggleDevLogin(true); // abre opções de dev automaticamente se Google OAuth não estiver provisionado
         }
       } catch (err) {
         btn.disabled = false;
         text.textContent = 'Entrar com Google Workspace';
         spinner.classList.add('hidden');
         alert('Erro ao iniciar login: ' + err.message);
-      }
-    }
-
-    // 4. Login Rápido de Homologação / Teste
-    async function loginAsDev(role) {
-      try {
-        const res = await fetch('/api/auth/dev-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role, returnTo })
-        });
-        const data = await res.json();
-        if (data.success) {
-          const target = data.redirect || returnTo || '/';
-          window.location.replace(target);
-        } else {
-          alert('Erro no login dev: ' + (data.error || 'Falha ao autenticar'));
-        }
-      } catch (err) {
-        alert('Erro ao comunicar com o servidor: ' + err.message);
-      }
-    }
-
-    function toggleDevLogin(forceOpen = false) {
-      const options = document.getElementById('devLoginOptions');
-      const icon = document.getElementById('devToggleIcon');
-      const isHidden = options.classList.contains('hidden');
-
-      if (isHidden || forceOpen) {
-        options.classList.remove('hidden');
-        icon.classList.add('rotate-180');
-      } else {
-        options.classList.add('hidden');
-        icon.classList.remove('rotate-180');
       }
     }
   </script>
