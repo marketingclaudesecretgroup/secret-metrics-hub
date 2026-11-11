@@ -44,6 +44,12 @@ Thumbs.db
 *.swp
 *.swo
 
+# Local runtime storage & database files
+backend-api/data/storage.json*
+data/storage.json*
+*.db
+*.sqlite
+
 # AI / Agent scratches
 .gemini/
 .antigravity/
